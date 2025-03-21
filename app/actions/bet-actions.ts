@@ -14,7 +14,7 @@ import { BetFormData } from '@/types/bet';
  */
 export async function createNewBet(formData: BetFormData) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
 
     // Lấy thông tin user hiện tại
     const {
@@ -96,7 +96,7 @@ export async function createNewBet(formData: BetFormData) {
  */
 export async function cancelBet(betId: string) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
 
     // Lấy thông tin user hiện tại
     const {

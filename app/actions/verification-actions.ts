@@ -18,7 +18,7 @@ export async function submitLotteryResult(resultData: {
   winning_numbers: any;
 }) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
 
     // Lấy thông tin user hiện tại (chỉ admin mới có quyền)
     const {
@@ -68,7 +68,7 @@ export async function submitLotteryResult(resultData: {
  */
 export async function verifyBetByCode(betCode: string) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
 
     // Tìm cược theo mã
     const { data: bet, error: betError } = await supabase
@@ -143,7 +143,7 @@ export async function verifyBetByCode(betCode: string) {
  */
 export async function verifyBetsByDate(draw_date: string, province: string) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
 
     // Lấy thông tin user hiện tại (chỉ admin mới có quyền)
     const {

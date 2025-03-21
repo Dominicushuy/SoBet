@@ -5,13 +5,14 @@ import { redirect } from 'next/navigation';
 
 import { registerUser } from '@/lib/supabase/mutations';
 import { createServerClient } from '@/lib/supabase/server';
+import { AuthUser, UserRole, getRedirectPathAfterLogin } from '@/lib/utils/auth-utils';
 
 /**
  * Server Action: Đăng ký người dùng mới
  */
 export async function signUp(formData: { email: string; password: string; username: string }) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
 
     // Đăng ký người dùng
     const user = await registerUser(supabase, formData.email, formData.password, formData.username);
@@ -48,9 +49,9 @@ export async function signUp(formData: { email: string; password: string; userna
  */
 export async function signIn(formData: { email: string; password: string }) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: formData.email,
       password: formData.password,
     });
@@ -59,8 +60,20 @@ export async function signIn(formData: { email: string; password: string }) {
       throw error;
     }
 
+    // Lấy thông tin role của người dùng
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', data.user.id)
+      .single();
+
+    const role = (userData?.role as UserRole) || 'user';
+
     return {
       success: true,
+      user: data.user,
+      role,
+      redirectTo: getRedirectPathAfterLogin(role),
     };
   } catch (error: any) {
     console.error('Error signing in:', error);
@@ -82,78 +95,68 @@ export async function signIn(formData: { email: string; password: string }) {
  * Server Action: Đăng xuất
  */
 export async function signOut() {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
   await supabase.auth.signOut();
   redirect('/');
 }
 
 /**
- * Server Action: Nạp tiền vào ví (mô phỏng thanh toán)
+ * Server Action: Lấy thông tin người dùng hiện tại kèm theo vai trò
  */
-export async function depositFunds(amount: number) {
+export async function getCurrentUserWithRole(): Promise<{ user: AuthUser | null }> {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
 
-    // Lấy thông tin user hiện tại
+    // Lấy thông tin người dùng từ auth
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return {
-        error: 'Bạn cần đăng nhập để nạp tiền',
-      };
+      return { user: null };
+    }
+
+    // Lấy thông tin chi tiết người dùng với vai trò
+    const { data: userData } = await supabase
+      .from('users')
+      .select('username, role')
+      .eq('id', user.id)
+      .single();
+
+    if (!userData) {
+      return { user: null };
     }
 
     // Lấy thông tin ví
-    const { data: wallet } = await supabase
+    const { data: walletData } = await supabase
       .from('wallets')
-      .select('*')
+      .select('balance')
       .eq('user_id', user.id)
       .single();
 
-    if (!wallet) {
-      return {
-        error: 'Không tìm thấy ví',
-      };
-    }
-
-    // Cập nhật ví
-    const { error: updateError } = await supabase
-      .from('wallets')
-      .update({
-        balance: wallet.balance + amount,
-      })
-      .eq('id', wallet.id);
-
-    if (updateError) {
-      throw updateError;
-    }
-
-    // Tạo giao dịch
-    const { error: transactionError } = await supabase.from('transactions').insert({
-      user_id: user.id,
-      wallet_id: wallet.id,
-      type: 'DEPOSIT',
-      amount: amount,
-      balance_before: wallet.balance,
-      balance_after: wallet.balance + amount,
-      status: 'COMPLETED',
-      notes: 'Nạp tiền vào ví',
-    });
-
-    if (transactionError) {
-      throw transactionError;
-    }
-
     return {
-      success: true,
-      newBalance: wallet.balance + amount,
+      user: {
+        id: user.id,
+        email: user.email || '',
+        username: userData.username,
+        role: userData.role as UserRole,
+        balance: walletData?.balance || 0,
+      },
     };
   } catch (error) {
-    console.error('Error depositing funds:', error);
-    return {
-      error: 'Đã xảy ra lỗi khi nạp tiền. Vui lòng thử lại sau.',
-    };
+    console.error('Error getting current user:', error);
+    return { user: null };
+  }
+}
+
+/**
+ * Server Action: Kiểm tra người dùng có phải là admin không
+ */
+export async function isAdmin(): Promise<boolean> {
+  try {
+    const result = await getCurrentUserWithRole();
+    return result.user?.role === 'admin';
+  } catch (error) {
+    return false;
   }
 }

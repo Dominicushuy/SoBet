@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
+import { AuthProvider } from '@/providers/AuthProvider';
 import QueryProvider from '@/providers/QueryProvider';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] });
@@ -22,13 +23,15 @@ export default function RootLayout({
     <html lang="vi" suppressHydrationWarning>
       <body className={inter.className}>
         <QueryProvider>
-          <div className="min-h-screen bg-lottery-background">
-            <Header />
-            <div className="flex flex-1">
-              <Sidebar className="hidden w-64 md:block" />
-              <main className="flex-1 p-4 md:p-6">{children}</main>
+          <AuthProvider>
+            <div className="min-h-screen bg-lottery-background">
+              <Header />
+              <div className="flex flex-1">
+                <Sidebar className="hidden w-64 md:block" />
+                <main className="flex-1 p-4 md:p-6">{children}</main>
+              </div>
             </div>
-          </div>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>
