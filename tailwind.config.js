@@ -1,7 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ['class'],
-  content: ['./pages/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './app/**/*.{ts,tsx}'],
+  content: [
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+  ],
   theme: {
     container: {
       center: true,
@@ -37,17 +42,24 @@ module.exports = {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
         },
-        // Màu sắc cho ứng dụng xổ số
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        // Lottery specific colors
         lottery: {
-          primary: '#D02B2B', // Đỏ - màu chính
-          secondary: '#FFD700', // Vàng - màu phụ
-          win: '#10B981', // Xanh lá - thắng
-          lose: '#EF4444', // Đỏ tươi - thua
-          neutral: '#6B7280', // Xám - màu trung tính
-          background: '#F9FAFB', // Nền nhạt
-          m1: '#FF6B6B', // Màu cho Miền Nam/Trung
-          m2: '#4ECDC4', // Màu cho Miền Bắc
-          selected: '#FDE68A', // Màu cho số đã chọn
+          primary: '#e11d48', // Red tone
+          secondary: '#fbbf24', // Gold tone
+          win: '#16a34a', // Green
+          lose: '#dc2626', // Red
+          selected: '#fcd34d', // Yellow
+          background: '#f8fafc', // Light gray background
+          m1: '#0ea5e9', // Blue for Miền Nam/Trung
+          m2: '#8b5cf6', // Purple for Miền Bắc
         },
       },
       borderRadius: {

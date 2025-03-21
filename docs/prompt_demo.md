@@ -70,14 +70,41 @@ Trong phân tích, chúng ta đã có:
 
 Hãy cung cấp:
 1. Lệnh khởi tạo dự án Next.js 15 với app router và TypeScript
-2. Danh sách dependencies cập nhật (bao gồm các thư viện UI, form validation, state management)
+2. Danh sách dependencies cập nhật (bao gồm các thư viện UI, form validation, state management, đặc biệt là @tanstack/react-query@4)
 3. Cấu trúc thư mục chi tiết tương thích với schema và interfaces đã phân tích
 4. Cấu hình tailwind.config.js với theme phù hợp cho ứng dụng xổ số (bổ sung các màu: lottery-primary, lottery-secondary, lottery-win, lottery-lose)
 5. Cấu hình .env.local template
 6. Mẫu global.css cơ bản
 7. Ví dụ layout.tsx và page.tsx cơ bản
+8. Setup React Query Provider cho toàn bộ ứng dụng
 
 Hãy tạo cấu hình phù hợp với cấu trúc đã phân tích, tập trung vào các chức năng chính: đặt cược, quản lý luật chơi, và đối soát kết quả.
+```
+
+## TASK 1.5: AUTHENTICATION & AUTHORIZATION
+
+```
+Dựa trên schema và các interfaces đã phân tích, tôi cần xây dựng hệ thống xác thực và phân quyền cho ứng dụng, tận dụng Supabase Auth.
+
+Hãy cung cấp code đầy đủ cho:
+1. app/login/page.tsx (trang đăng nhập)
+2. app/login/components/LoginForm.tsx (form đăng nhập)
+3. components/layout/AuthProvider.tsx (context provider cho authentication)
+4. lib/utils/auth-utils.ts (utility functions cho authentication)
+5. lib/actions/auth-actions.ts (Server Actions cho đăng nhập/đăng xuất)
+6. middleware.ts (middleware cho route protection và role-based access)
+7. components/layout/Header.tsx (hiển thị thông tin người dùng đã đăng nhập)
+8. components/layout/ProtectedRoute.tsx (wrapper cho các route yêu cầu phân quyền)
+
+Hệ thống cần:
+- Sử dụng Supabase Auth cho quản lý đăng nhập
+- Redirect người dùng chưa đăng nhập về trang login
+- Kiểm tra role (admin/user) và điều hướng phù hợp sau khi đăng nhập
+- Hiển thị UI phù hợp dựa trên role của người dùng
+- Bảo vệ các route admin không cho user thông thường truy cập
+- Tích hợp với React Query để quản lý authentication state
+
+Lưu ý là chúng ta sẽ bỏ qua phần đăng ký người dùng vì sẽ tạo thủ công qua Supabase Dashboard.
 ```
 
 ## TASK 2: THIẾT LẬP SUPABASE & DATABASE SCHEMA (CẬP NHẬT)
