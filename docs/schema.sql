@@ -18,6 +18,9 @@ bao gồm các bảng chính:
 Được thiết kế cho Supabase với đầy đủ RLS (Row Level Security).
 */
 
+-- Thêm các extensions cần thiết (chạy trước khi thêm schema)
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 /*============================================
   I. ĐỊNH NGHĨA CÁC BẢNG CHÍNH
 ============================================*/
@@ -360,166 +363,395 @@ CREATE POLICY "Admins can do anything with results" ON public.results
   V. DỮ LIỆU MẪU
 ============================================*/
 
--- Dữ liệu mẫu cho quy tắc cược
-INSERT INTO public.rules (name, description, bet_type, rule_code, region, digits, rate, variants, win_logic, active)
-VALUES 
-(
-    'Đầu Đuôi', 
-    'Cá cược số 2 chữ số với đầu (giải 8/7) hoặc đuôi (giải đặc biệt)', 
-    'ĐẦU ĐUÔI', 
-    'dd', 
-    'BOTH', 
-    2, 
-    75,
-    '[{"code": "dd", "name": "Đầu Đuôi Toàn Phần"}, {"code": "dau", "name": "Chỉ Đầu"}, {"code": "duoi", "name": "Chỉ Đuôi"}]'::jsonb,
-    '{"type": "SIMPLE", "prizes": {"M1": ["G8", "DB"], "M2": ["G7", "DB"]}, "digitPosition": "LAST", "digitCount": 2}'::jsonb,
-    true
-),
-(
-    'Xỉu Chủ', 
-    'Cá cược số 3 chữ số với đầu (giải 7/6) hoặc đuôi (giải đặc biệt)', 
-    'XỈU CHỦ', 
-    'xc', 
-    'BOTH', 
-    3, 
-    650,
-    '[{"code": "xc", "name": "Xỉu Chủ Toàn Phần"}, {"code": "dau", "name": "Chỉ Đầu"}, {"code": "duoi", "name": "Chỉ Đuôi"}]'::jsonb,
-    '{"type": "SIMPLE", "prizes": {"M1": ["G7", "DB"], "M2": ["G6", "DB"]}, "digitPosition": "LAST", "digitCount": 3}'::jsonb,
-    true
-),
-(
-    'Bao Lô 2', 
-    'Bao lô 2 chữ số, trúng với bất kỳ 2 số cuối của lô nào', 
-    'BAO LÔ', 
-    'b2', 
-    'BOTH', 
-    2, 
-    75,
-    null,
-    '{"type": "SIMPLE", "prizes": {"M1": ["ALL"], "M2": ["ALL"]}, "digitPosition": "LAST", "digitCount": 2}'::jsonb,
-    true
-),
-(
-    'Bao Lô 3', 
-    'Bao lô 3 chữ số, trúng với bất kỳ 3 số cuối của lô nào', 
-    'BAO LÔ', 
-    'b3', 
-    'BOTH', 
-    3, 
-    650,
-    null,
-    '{"type": "SIMPLE", "prizes": {"M1": ["ALL"], "M2": ["ALL"]}, "digitPosition": "LAST", "digitCount": 3}'::jsonb,
-    true
-),
-(
-    'Bao Lô 4', 
-    'Bao lô 4 chữ số, trúng với bất kỳ 4 số cuối của lô nào', 
-    'BAO LÔ', 
-    'b4', 
-    'BOTH', 
-    4, 
-    5500,
-    null,
-    '{"type": "SIMPLE", "prizes": {"M1": ["ALL"], "M2": ["ALL"]}, "digitPosition": "LAST", "digitCount": 4}'::jsonb,
-    true
+-- Dữ liệu mẫu cho quy tắc cược  
+INSERT INTO public.rules (name, description, bet_type, rule_code, region, digits, rate, stake_formula, variants, win_logic, active)  
+VALUES   
+(  
+    'Đầu Đuôi',   
+    'Cá cược số 2 chữ số với đầu (giải 8/7) hoặc đuôi (giải đặc biệt)',   
+    'ĐẦU ĐUÔI',   
+    'dd',   
+    'BOTH',   
+    2,   
+    75,  
+    'return 1;',  
+    '[{"code": "dd", "name": "Đầu Đuôi Toàn Phần"}, {"code": "dau", "name": "Chỉ Đầu"}, {"code": "duoi", "name": "Chỉ Đuôi"}]'::jsonb,  
+    '{"type": "SIMPLE", "prizes": {"M1": ["G8", "DB"], "M2": ["G7", "DB"]}, "digitPosition": "LAST", "digitCount": 2}'::jsonb,  
+    true  
+),  
+(  
+    'Xỉu Chủ',   
+    'Cá cược số 3 chữ số với đầu (giải 7/6) hoặc đuôi (giải đặc biệt)',   
+    'XỈU CHỦ',   
+    'xc',   
+    'BOTH',   
+    3,   
+    650,  
+    'return 1;',  
+    '[{"code": "xc", "name": "Xỉu Chủ Toàn Phần"}, {"code": "dau", "name": "Chỉ Đầu"}, {"code": "duoi", "name": "Chỉ Đuôi"}]'::jsonb,  
+    '{"type": "SIMPLE", "prizes": {"M1": ["G7", "DB"], "M2": ["G6", "DB"]}, "digitPosition": "LAST", "digitCount": 3}'::jsonb,  
+    true  
+),  
+(  
+    'Bao Lô 2',   
+    'Bao lô 2 chữ số, trúng với bất kỳ 2 số cuối của lô nào',   
+    'BAO LÔ',   
+    'b2',   
+    'BOTH',   
+    2,   
+    75,  
+    'return 1;',  
+    null,  
+    '{"type": "SIMPLE", "prizes": {"M1": ["ALL"], "M2": ["ALL"]}, "digitPosition": "LAST", "digitCount": 2}'::jsonb,  
+    true  
+),  
+(  
+    'Bao Lô 3',   
+    'Bao lô 3 chữ số, trúng với bất kỳ 3 số cuối của lô nào',   
+    'BAO LÔ',   
+    'b3',   
+    'BOTH',   
+    3,   
+    650,  
+    'return 1;',  
+    null,  
+    '{"type": "SIMPLE", "prizes": {"M1": ["ALL"], "M2": ["ALL"]}, "digitPosition": "LAST", "digitCount": 3}'::jsonb,  
+    true  
+),  
+(  
+    'Bao Lô 4',   
+    'Bao lô 4 chữ số, trúng với bất kỳ 4 số cuối của lô nào',   
+    'BAO LÔ',   
+    'b4',   
+    'BOTH',   
+    4,   
+    5500,  
+    'return 1;',  
+    null,  
+    '{"type": "SIMPLE", "prizes": {"M1": ["ALL"], "M2": ["ALL"]}, "digitPosition": "LAST", "digitCount": 4}'::jsonb,  
+    true  
+),  
+(  
+    'Bao 7 Lô',   
+    'Cược số 2, 3 hoặc 4 chữ số, trúng khi khớp với các chữ số cuối của 7 lô đặc biệt (M1): giải tám (1), giải bảy (1), giải sáu (3), giải năm (1), giải đặc biệt (1)',   
+    'BAO LÔ ĐẶC BIỆT',   
+    'b7l',   
+    'M1',   
+    null,   
+    null,  
+    'return 7;',  
+    '[  
+        {"code": "b7l2", "name": "Bao 7 Lô 2 số", "digits": 2},   
+        {"code": "b7l3", "name": "Bao 7 Lô 3 số", "digits": 3},   
+        {"code": "b7l4", "name": "Bao 7 Lô 4 số", "digits": 4}  
+    ]'::jsonb,  
+    '{  
+        "type": "COMPLEX",   
+        "prizes": {  
+            "M1": ["G8", "G7", "G6", "G5", "DB"]  
+        },   
+        "digitPosition": "LAST",   
+        "matchType": "ANY"  
+    }'::jsonb,  
+    true  
+),  
+(  
+    'Bao 8 Lô',   
+    'Cược số 2, 3 hoặc 4 chữ số, trúng khi khớp với các chữ số cuối của 8 lô đặc biệt (M2): giải đặc biệt (1), giải bảy (1), giải sáu (3), giải năm (1), giải tư (1), giải ba (1)',   
+    'BAO LÔ ĐẶC BIỆT',   
+    'b8l',   
+    'M2',   
+    null,   
+    null,  
+    'return 8;',  
+    '[  
+        {"code": "b8l2", "name": "Bao 8 Lô 2 số", "digits": 2},   
+        {"code": "b8l3", "name": "Bao 8 Lô 3 số", "digits": 3},   
+        {"code": "b8l4", "name": "Bao 8 Lô 4 số", "digits": 4}  
+    ]'::jsonb,  
+    '{  
+        "type": "COMPLEX",   
+        "prizes": {  
+            "M2": ["DB", "G7", "G6", "G5", "G4", "G3"]  
+        },   
+        "digitPosition": "LAST",   
+        "matchType": "ANY"  
+    }'::jsonb,  
+    true  
+),  
+(  
+    'Nhất To',   
+    'Cược số 2 chữ số, trúng khi khớp với 2 số cuối của giải Nhất',   
+    'NHẤT TO',   
+    'nt',   
+    'M2',   
+    2,   
+    75,  
+    'return 1;',  
+    null,  
+    '{  
+        "type": "SIMPLE",   
+        "prizes": {  
+            "M2": ["G1"]  
+        },   
+        "digitPosition": "LAST",   
+        "digitCount": 2  
+    }'::jsonb,  
+    true  
+),  
+(  
+    'Xiên',   
+    'Cược 2-4 cặp số (mỗi cặp 2 chữ số), thắng khi tất cả các số đều xuất hiện trong kết quả xổ số',   
+    'XIÊN',   
+    'x',   
+    'M2',   
+    2,   
+    null,  
+    'return 27;',  
+    '[  
+        {"code": "x2", "name": "Xiên 2", "rate": 75},   
+        {"code": "x3", "name": "Xiên 3", "rate": 40},   
+        {"code": "x4", "name": "Xiên 4", "rate": 250}  
+    ]'::jsonb,  
+    '{  
+        "type": "COMPLEX",   
+        "prizes": {  
+            "M2": ["ALL"]  
+        },   
+        "digitPosition": "LAST",   
+        "digitCount": 2,  
+        "matchType": "ALL"  
+    }'::jsonb,  
+    true  
+),  
+(  
+    'Đá',   
+    'Cược từ 2 đến 5 cặp số (mỗi cặp 2 chữ số), nhiều kịch bản trúng thưởng phức tạp',   
+    'ĐÁ',   
+    'da',   
+    'M1',   
+    2,   
+    null,  
+    'if (subtype === "da2") return 1; else if (subtype === "da3") return 3; else if (subtype === "da4") return 6; else if (subtype === "da5") return 10; return 1;',  
+    '[  
+        {"code": "da2", "name": "Đá 2", "rate": 12.5},   
+        {"code": "da3", "name": "Đá 3", "rate": 37.5, "specialRates": {"3_plus_3times": 112.5, "3_plus_2times": 75, "2_plus_2times": 43.75, "2_only": 25}},   
+        {"code": "da4", "name": "Đá 4", "rate": 250, "specialRates": {"4_plus_3times": 750, "4_plus_2times": 500, "3_plus_2times": 150, "2_plus_2times": 75}},  
+        {"code": "da5", "name": "Đá 5", "rate": 1250, "specialRates": {"5_plus_3times": 3750, "5_plus_2times": 2500, "4_plus_2times": 750, "3_plus_2times": 500}}  
+    ]'::jsonb,  
+    '{  
+        "type": "COMPLEX",   
+        "prizes": {  
+            "M1": ["ALL"]  
+        },   
+        "digitPosition": "LAST",
+        "digitCount": 2,  
+        "specialLogic": "countMatches"  
+    }'::jsonb,  
+    true  
 );
 
--- Dữ liệu mẫu cho provinces
+-- Xóa dữ liệu hiện tại từ các bảng
+TRUNCATE TABLE public.lottery_schedules CASCADE;
+TRUNCATE TABLE public.provinces CASCADE;
+
+-- Thêm dữ liệu vào bảng provinces
+-- Miền Bắc (M2)
 INSERT INTO public.provinces (name, code, region, sub_region, is_active)
 VALUES
--- Miền Bắc (M2)
 ('Hà Nội', 'HN', 'M2', NULL, true),
 ('Quảng Ninh', 'QN', 'M2', NULL, true),
 ('Bắc Ninh', 'BN', 'M2', NULL, true),
 ('Hải Phòng', 'HP', 'M2', NULL, true),
 ('Nam Định', 'ND', 'M2', NULL, true),
-('Thái Bình', 'TB', 'M2', NULL, true),
+('Thái Bình', 'TB', 'M2', NULL, true);
 
 -- Miền Trung (M1)
-('Đà Nẵng', 'DNG', 'M1', 'Miền Trung', true),
-('Khánh Hòa', 'KH', 'M1', 'Miền Trung', true),
-('Thừa Thiên Huế', 'TTH', 'M1', 'Miền Trung', true),
-('Quảng Nam', 'QNM', 'M1', 'Miền Trung', true),
-('Quảng Bình', 'QB', 'M1', 'Miền Trung', true),
-('Quảng Trị', 'QT', 'M1', 'Miền Trung', true),
-('Bình Định', 'BDI', 'M1', 'Miền Trung', true),
-('Phú Yên', 'PY', 'M1', 'Miền Trung', true),
-('Gia Lai', 'GL', 'M1', 'Miền Trung', true),
-('Ninh Thuận', 'NT', 'M1', 'Miền Trung', true),
-('Quảng Ngãi', 'QNG', 'M1', 'Miền Trung', true),
-('Đắk Lắk', 'DLK', 'M1', 'Miền Trung', true),
-('Đắk Nông', 'DNO', 'M1', 'Miền Trung', true),
-('Kon Tum', 'KT', 'M1', 'Miền Trung', true),
+INSERT INTO public.provinces (name, code, region, sub_region, is_active)
+VALUES
+('Đà Nẵng', 'XSDNG', 'M1', 'Miền Trung', true),
+('Khánh Hòa', 'XSKH', 'M1', 'Miền Trung', true),
+('Thừa T. Huế', 'XSTTH', 'M1', 'Miền Trung', true),
+('Quảng Nam', 'XSQNM', 'M1', 'Miền Trung', true),
+('Quảng Bình', 'XSQB', 'M1', 'Miền Trung', true),
+('Quảng Trị', 'XSQT', 'M1', 'Miền Trung', true),
+('Bình Định', 'XSBDI', 'M1', 'Miền Trung', true),
+('Phú Yên', 'XSPY', 'M1', 'Miền Trung', true),
+('Gia Lai', 'XSGL', 'M1', 'Miền Trung', true),
+('Ninh Thuận', 'XSNT', 'M1', 'Miền Trung', true),
+('Quảng Ngãi', 'XSQNG', 'M1', 'Miền Trung', true),
+('Đắk Lắk', 'XSDLK', 'M1', 'Miền Trung', true),
+('Đắk Nông', 'XSDNO', 'M1', 'Miền Trung', true),
+('Kon Tum', 'XSKT', 'M1', 'Miền Trung', true);
 
 -- Miền Nam (M1)
-('TP. HCM', 'HCM', 'M1', 'Miền Nam', true),
-('Đồng Nai', 'DN', 'M1', 'Miền Nam', true),
-('Cần Thơ', 'CT', 'M1', 'Miền Nam', true),
-('Đồng Tháp', 'DT', 'M1', 'Miền Nam', true),
-('Cà Mau', 'CM', 'M1', 'Miền Nam', true),
-('Bến Tre', 'BTR', 'M1', 'Miền Nam', true),
-('Vũng Tàu', 'VT', 'M1', 'Miền Nam', true),
-('Bạc Liêu', 'BL', 'M1', 'Miền Nam', true),
-('Sóc Trăng', 'ST', 'M1', 'Miền Nam', true),
-('Tây Ninh', 'TN', 'M1', 'Miền Nam', true),
-('An Giang', 'AG', 'M1', 'Miền Nam', true),
-('Bình Thuận', 'BTH', 'M1', 'Miền Nam', true),
-('Vĩnh Long', 'VL', 'M1', 'Miền Nam', true),
-('Bình Dương', 'BD', 'M1', 'Miền Nam', true),
-('Trà Vinh', 'TV', 'M1', 'Miền Nam', true),
-('Long An', 'LA', 'M1', 'Miền Nam', true),
-('Bình Phước', 'BP', 'M1', 'Miền Nam', true),
-('Hậu Giang', 'HG', 'M1', 'Miền Nam', true),
-('Tiền Giang', 'TG', 'M1', 'Miền Nam', true),
-('Kiên Giang', 'KG', 'M1', 'Miền Nam', true),
-('Đà Lạt', 'DL', 'M1', 'Miền Nam', true);
+INSERT INTO public.provinces (name, code, region, sub_region, is_active)
+VALUES
+('TP. HCM', 'XSHCM', 'M1', 'Miền Nam', true),
+('Đồng Nai', 'XSDN', 'M1', 'Miền Nam', true),
+('Cần Thơ', 'XSCT', 'M1', 'Miền Nam', true),
+('Đồng Tháp', 'XSDT', 'M1', 'Miền Nam', true),
+('Cà Mau', 'XSCM', 'M1', 'Miền Nam', true),
+('Bến Tre', 'XSBTR', 'M1', 'Miền Nam', true),
+('Vũng Tàu', 'XSVT', 'M1', 'Miền Nam', true),
+('Bạc Liêu', 'XSBL', 'M1', 'Miền Nam', true),
+('Sóc Trăng', 'XSST', 'M1', 'Miền Nam', true),
+('Tây Ninh', 'XSTN', 'M1', 'Miền Nam', true),
+('An Giang', 'XSAG', 'M1', 'Miền Nam', true),
+('Bình Thuận', 'XSBTH', 'M1', 'Miền Nam', true),
+('Vĩnh Long', 'XSVL', 'M1', 'Miền Nam', true),
+('Bình Dương', 'XSBD', 'M1', 'Miền Nam', true),
+('Trà Vinh', 'XSTV', 'M1', 'Miền Nam', true),
+('Long An', 'XSLA', 'M1', 'Miền Nam', true),
+('Bình Phước', 'XSBP', 'M1', 'Miền Nam', true),
+('Hậu Giang', 'XSHG', 'M1', 'Miền Nam', true),
+('Tiền Giang', 'XSTG', 'M1', 'Miền Nam', true),
+('Kiên Giang', 'XSKG', 'M1', 'Miền Nam', true),
+('Đà Lạt', 'XSDL', 'M1', 'Miền Nam', true);
 
--- Dữ liệu mẫu cho lottery_schedules (Lịch xổ số hàng tuần)
--- Đây chỉ là một số ví dụ, cần cập nhật đầy đủ theo lịch xổ số thực tế
--- Miền Bắc
-INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 1 FROM public.provinces WHERE name = 'Hà Nội'; -- Thứ 2
+-- Thêm dữ liệu vào bảng lottery_schedules
 
+-- Thứ Hai (day_of_week = 1)
 INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 2 FROM public.provinces WHERE name = 'Quảng Ninh'; -- Thứ 3
-
-INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 3 FROM public.provinces WHERE name = 'Bắc Ninh'; -- Thứ 4
+SELECT id, 1 FROM public.provinces WHERE name = 'Hà Nội';
 
 INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 4 FROM public.provinces WHERE name = 'Hà Nội'; -- Thứ 5
+SELECT id, 1 FROM public.provinces WHERE name = 'Phú Yên';
 
 INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 5 FROM public.provinces WHERE name = 'Hải Phòng'; -- Thứ 6
+SELECT id, 1 FROM public.provinces WHERE name = 'Thừa T. Huế';
 
 INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 6 FROM public.provinces WHERE name = 'Nam Định'; -- Thứ 7
+SELECT id, 1 FROM public.provinces WHERE name = 'TP. HCM';
 
 INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 0 FROM public.provinces WHERE name = 'Thái Bình'; -- Chủ nhật
-
--- Miền Trung (chỉ một số ví dụ)
-INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 1 FROM public.provinces WHERE name = 'Thừa Thiên Huế'; -- Thứ 2
+SELECT id, 1 FROM public.provinces WHERE name = 'Đồng Tháp';
 
 INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 1 FROM public.provinces WHERE name = 'Phú Yên'; -- Thứ 2
+SELECT id, 1 FROM public.provinces WHERE name = 'Cà Mau';
+
+-- Thứ Ba (day_of_week = 2)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 2 FROM public.provinces WHERE name = 'Quảng Ninh';
 
 INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 2 FROM public.provinces WHERE name = 'Đắk Lắk'; -- Thứ 3
+SELECT id, 2 FROM public.provinces WHERE name = 'Đắk Lắk';
 
 INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 2 FROM public.provinces WHERE name = 'Quảng Nam'; -- Thứ 3
-
--- Miền Nam (chỉ một số ví dụ)
-INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 1 FROM public.provinces WHERE name = 'TP. HCM'; -- Thứ 2
+SELECT id, 2 FROM public.provinces WHERE name = 'Quảng Nam';
 
 INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 1 FROM public.provinces WHERE name = 'Đồng Tháp'; -- Thứ 2
+SELECT id, 2 FROM public.provinces WHERE name = 'Bến Tre';
 
 INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 1 FROM public.provinces WHERE name = 'Cà Mau'; -- Thứ 2
+SELECT id, 2 FROM public.provinces WHERE name = 'Vũng Tàu';
 
 INSERT INTO public.lottery_schedules (province_id, day_of_week)
-SELECT id, 2 FROM public.provinces WHERE name = 'Bến Tre'; -- Thứ 3
+SELECT id, 2 FROM public.provinces WHERE name = 'Bạc Liêu';
+
+-- Thứ Tư (day_of_week = 3)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 3 FROM public.provinces WHERE name = 'Bắc Ninh';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 3 FROM public.provinces WHERE name = 'Đà Nẵng';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 3 FROM public.provinces WHERE name = 'Khánh Hòa';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 3 FROM public.provinces WHERE name = 'Đồng Nai';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 3 FROM public.provinces WHERE name = 'Cần Thơ';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 3 FROM public.provinces WHERE name = 'Sóc Trăng';
+
+-- Thứ Năm (day_of_week = 4)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 4 FROM public.provinces WHERE name = 'Hà Nội';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 4 FROM public.provinces WHERE name = 'Bình Định';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 4 FROM public.provinces WHERE name = 'Quảng Trị';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 4 FROM public.provinces WHERE name = 'Quảng Bình';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 4 FROM public.provinces WHERE name = 'Tây Ninh';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 4 FROM public.provinces WHERE name = 'An Giang';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 4 FROM public.provinces WHERE name = 'Bình Thuận';
+
+-- Thứ Sáu (day_of_week = 5)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 5 FROM public.provinces WHERE name = 'Hải Phòng';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 5 FROM public.provinces WHERE name = 'Gia Lai';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 5 FROM public.provinces WHERE name = 'Ninh Thuận';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 5 FROM public.provinces WHERE name = 'Vĩnh Long';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 5 FROM public.provinces WHERE name = 'Bình Dương';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 5 FROM public.provinces WHERE name = 'Trà Vinh';
+
+-- Thứ Bảy (day_of_week = 6)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 6 FROM public.provinces WHERE name = 'Nam Định';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 6 FROM public.provinces WHERE name = 'Đà Nẵng';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 6 FROM public.provinces WHERE name = 'Quảng Ngãi';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 6 FROM public.provinces WHERE name = 'Đắk Nông';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 6 FROM public.provinces WHERE name = 'TP. HCM';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 6 FROM public.provinces WHERE name = 'Long An';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 6 FROM public.provinces WHERE name = 'Bình Phước';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 6 FROM public.provinces WHERE name = 'Hậu Giang';
+
+-- Chủ Nhật (day_of_week = 0)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 0 FROM public.provinces WHERE name = 'Thái Bình';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 0 FROM public.provinces WHERE name = 'Kon Tum';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 0 FROM public.provinces WHERE name = 'Khánh Hòa';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 0 FROM public.provinces WHERE name = 'Thừa T. Huế';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 0 FROM public.provinces WHERE name = 'Tiền Giang';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 0 FROM public.provinces WHERE name = 'Kiên Giang';
+
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
+SELECT id, 0 FROM public.provinces WHERE name = 'Đà Lạt';
