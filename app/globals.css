@@ -1,3 +1,123 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 346.8 77.2% 49.8%; /* Red tone for lottery */
+    --primary-foreground: 355.7 100% 97.3%;
+
+    --secondary: 47.9 95.8% 53.1%; /* Gold tone for lottery */
+    --secondary-foreground: 26 83.3% 14.1%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 346.8 77.2% 49.8%;
+    --primary-foreground: 355.7 100% 97.3%;
+
+    --secondary: 47.9 95.8% 53.1%;
+    --secondary-foreground: 26 83.3% 14.1%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom styles for lottery app */
+.number-grid {
+  @apply grid grid-cols-5 gap-2 md:grid-cols-10;
+}
+
+.lottery-number {
+  @apply flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold transition-colors hover:cursor-pointer;
+}
+
+.lottery-number-default {
+  @apply bg-muted hover:bg-muted/70;
+}
+
+.lottery-number-selected {
+  @apply bg-lottery-selected text-black;
+}
+
+.lottery-number-win {
+  @apply bg-lottery-win text-white;
+}
+
+.lottery-number-lose {
+  @apply bg-lottery-lose text-white;
+}
+
+/* Region styles */
+.region-m1 {
+  @apply bg-lottery-m1 text-white;
+}
+
+.region-m2 {
+  @apply bg-lottery-m2 text-white;
+}
+
+/* Zodiac animal grid */
+.zodiac-grid {
+  @apply grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6;
+}
+
+.zodiac-item {
+  @apply flex flex-col items-center justify-center rounded-lg border p-3 transition-colors hover:bg-muted;
+}
+
+.zodiac-item-selected {
+  @apply border-2 border-lottery-primary bg-lottery-selected;
+}

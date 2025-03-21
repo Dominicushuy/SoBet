@@ -477,49 +477,49 @@ VALUES
 -- Dữ liệu mẫu cho lottery_schedules (Lịch xổ số hàng tuần)
 -- Đây chỉ là một số ví dụ, cần cập nhật đầy đủ theo lịch xổ số thực tế
 -- Miền Bắc
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 1 FROM public.provinces WHERE name = 'Hà Nội'; -- Thứ 2
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 2 FROM public.provinces WHERE name = 'Quảng Ninh'; -- Thứ 3
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 3 FROM public.provinces WHERE name = 'Bắc Ninh'; -- Thứ 4
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 4 FROM public.provinces WHERE name = 'Hà Nội'; -- Thứ 5
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 5 FROM public.provinces WHERE name = 'Hải Phòng'; -- Thứ 6
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 6 FROM public.provinces WHERE name = 'Nam Định'; -- Thứ 7
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 0 FROM public.provinces WHERE name = 'Thái Bình'; -- Chủ nhật
 
 -- Miền Trung (chỉ một số ví dụ)
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 1 FROM public.provinces WHERE name = 'Thừa Thiên Huế'; -- Thứ 2
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 1 FROM public.provinces WHERE name = 'Phú Yên'; -- Thứ 2
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 2 FROM public.provinces WHERE name = 'Đắk Lắk'; -- Thứ 3
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 2 FROM public.provinces WHERE name = 'Quảng Nam'; -- Thứ 3
 
 -- Miền Nam (chỉ một số ví dụ)
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 1 FROM public.provinces WHERE name = 'TP. HCM'; -- Thứ 2
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 1 FROM public.provinces WHERE name = 'Đồng Tháp'; -- Thứ 2
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 1 FROM public.provinces WHERE name = 'Cà Mau'; -- Thứ 2
 
-INSERT INTO public.lottery_schedules (province_id, day_of_week, is_active)
+INSERT INTO public.lottery_schedules (province_id, day_of_week)
 SELECT id, 2 FROM public.provinces WHERE name = 'Bến Tre'; -- Thứ 3

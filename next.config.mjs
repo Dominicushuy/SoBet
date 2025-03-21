@@ -27,7 +27,7 @@ const nextConfig = {
     domains: [
       'localhost',
       // Domain của Supabase storage
-      'flxypumojeqxufdlogdd.supabase.co',
+      'wpvmivzabformiqyukms.supabase.co',
     ],
     formats: ['image/avif', 'image/webp'],
     // Cấu hình kích thước mặc định cho các hình ảnh

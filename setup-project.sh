@@ -20,6 +20,8 @@ echo -e "${YELLOW}Tạo cấu trúc thư mục app...${NC}"
 mkdir -p "$PROJECT_DIR/app/bet/components"
 mkdir -p "$PROJECT_DIR/app/admin/bet-types/components"
 mkdir -p "$PROJECT_DIR/app/verification/components"
+mkdir -p "$PROJECT_DIR/app/account/bets"
+mkdir -p "$PROJECT_DIR/app/results"
 
 # Kiểm tra và tạo thư mục components và các thư mục con
 echo -e "${YELLOW}Tạo cấu trúc thư mục components...${NC}"
@@ -50,6 +52,7 @@ echo -e "\n${YELLOW}Tạo các file trong app...${NC}"
 # Tạo các file trong app
 create_file "$PROJECT_DIR/app/layout.tsx"
 create_file "$PROJECT_DIR/app/page.tsx"
+create_file "$PROJECT_DIR/app/globals.css"
 
 # Tạo các file trong app/bet
 create_file "$PROJECT_DIR/app/bet/page.tsx"
@@ -61,6 +64,7 @@ create_file "$PROJECT_DIR/app/bet/components/AmountCalculator.tsx"
 
 # Tạo các file trong app/admin
 create_file "$PROJECT_DIR/app/admin/page.tsx"
+create_file "$PROJECT_DIR/app/admin/layout.tsx"
 create_file "$PROJECT_DIR/app/admin/bet-types/page.tsx"
 create_file "$PROJECT_DIR/app/admin/bet-types/components/BetTypeEditor.tsx"
 create_file "$PROJECT_DIR/app/admin/bet-types/components/PayRateEditor.tsx"
@@ -69,6 +73,13 @@ create_file "$PROJECT_DIR/app/admin/bet-types/components/PayRateEditor.tsx"
 create_file "$PROJECT_DIR/app/verification/page.tsx"
 create_file "$PROJECT_DIR/app/verification/components/ResultsInput.tsx"
 create_file "$PROJECT_DIR/app/verification/components/BetVerifier.tsx"
+
+# Tạo các file trong app/account
+create_file "$PROJECT_DIR/app/account/page.tsx"
+create_file "$PROJECT_DIR/app/account/bets/page.tsx"
+
+# Tạo các file trong app/results
+create_file "$PROJECT_DIR/app/results/page.tsx"
 
 echo -e "\n${YELLOW}Tạo các file trong components...${NC}"
 # Tạo các file trong components/ui
@@ -85,6 +96,7 @@ create_file "$PROJECT_DIR/components/layout/Sidebar.tsx"
 echo -e "\n${YELLOW}Tạo các file trong lib...${NC}"
 # Tạo các file trong lib/supabase
 create_file "$PROJECT_DIR/lib/supabase/client.ts"
+create_file "$PROJECT_DIR/lib/supabase/server.ts"
 create_file "$PROJECT_DIR/lib/supabase/types.ts"
 
 # Tạo các file trong lib/validators
@@ -95,12 +107,23 @@ create_file "$PROJECT_DIR/lib/validators/result-form.ts"
 create_file "$PROJECT_DIR/lib/lottery/bet-types.ts"
 create_file "$PROJECT_DIR/lib/lottery/calculators.ts"
 create_file "$PROJECT_DIR/lib/lottery/number-generators.ts"
+create_file "$PROJECT_DIR/lib/lottery/result-verifier.ts"
+
+# Tạo file utils
+create_file "$PROJECT_DIR/lib/utils.ts"
 
 echo -e "\n${YELLOW}Tạo các file trong types...${NC}"
 # Tạo các file trong types
 create_file "$PROJECT_DIR/types/bet.ts"
 create_file "$PROJECT_DIR/types/result.ts"
 
+# Tạo các file cấu hình
+echo -e "\n${YELLOW}Tạo các file cấu hình...${NC}"
+create_file "$PROJECT_DIR/.env.local"
+create_file "$PROJECT_DIR/next.config.mjs"
+create_file "$PROJECT_DIR/tailwind.config.js"
+create_file "$PROJECT_DIR/.eslintrc.js"
+
 echo -e "\n${GREEN}=== Đã hoàn thành thiết lập cấu trúc dự án ===${NC}"
 echo -e "${BLUE}Tổng số thư mục đã tạo: $(find "$PROJECT_DIR" -type d | wc -l)${NC}"
-echo -e "${BLUE}Tổng số file đã tạo: $(find "$PROJECT_DIR" -type f | wc -l)${NC}"
+echo -e "${BLUE}Tổng số file đã tạo: $(find "$PROJECT_DIR" -type f -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.css" -o -name ".env*" | wc -l)${NC}"

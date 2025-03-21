@@ -1,83 +1,92 @@
-import Image from 'next/image';
+import Link from 'next/link';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{' '}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">Save and see your changes instantly.</li>
-        </ol>
+    <div className="container mx-auto max-w-6xl">
+      <section className="mb-12 text-center">
+        <h1 className="mb-6 text-4xl font-bold">Hệ Thống Cá Cược Xổ Số</h1>
+        <p className="text-lg text-muted-foreground">
+          Đặt cược dễ dàng với đầy đủ các hình thức: Đầu Đuôi, Xỉu Chủ, Bao Lô và nhiều loại khác
+        </p>
+      </section>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader className="bg-lottery-primary text-white">
+            <CardTitle>Đặt Cược</CardTitle>
+            <CardDescription className="text-gray-100">Chọn số và đặt cược dễ dàng</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <p className="mb-4">
+              Đa dạng hình thức cá cược: Đầu Đuôi, Xỉu Chủ, Bao Lô, và nhiều hình thức khác.
+            </p>
+            <Button asChild className="w-full">
+              <Link href="/bet">Đặt Cược Ngay</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="bg-lottery-m1 text-white">
+            <CardTitle>Miền Nam/Trung (M1)</CardTitle>
+            <CardDescription className="text-gray-100">
+              Cược cho các đài miền Nam và miền Trung
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <p className="mb-4">
+              Xổ số các tỉnh miền Nam (TP.HCM, Đồng Nai...) và miền Trung (Đà Nẵng, Khánh Hòa...).
+              Giải đặc biệt 6 chữ số.
+            </p>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/bet?region=M1">Cược M1</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="bg-lottery-m2 text-white">
+            <CardTitle>Miền Bắc (M2)</CardTitle>
+            <CardDescription className="text-gray-100">Cược cho các đài miền Bắc</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <p className="mb-4">
+              Xổ số miền Bắc (Hà Nội, Quảng Ninh, Hải Phòng...). Giải đặc biệt 5 chữ số. Cách tính
+              cược khác với M1.
+            </p>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/bet?region=M2">Cược M2</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-12 rounded-lg bg-muted p-6">
+        <h2 className="mb-4 text-2xl font-bold">Các Loại Cược Phổ Biến</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-md bg-white p-4 shadow">
+            <h3 className="mb-2 font-bold">Đầu Đuôi (dd)</h3>
+            <p className="text-sm">
+              Cược số 2 chữ số, trúng khi khớp với đầu (giải 8/7) hoặc đuôi (giải đặc biệt).
+            </p>
+          </div>
+          <div className="rounded-md bg-white p-4 shadow">
+            <h3 className="mb-2 font-bold">Xỉu Chủ (xc)</h3>
+            <p className="text-sm">
+              Cược số 3 chữ số, trúng khi khớp với đầu (giải 7/6) hoặc đuôi (giải đặc biệt).
+            </p>
+          </div>
+          <div className="rounded-md bg-white p-4 shadow">
+            <h3 className="mb-2 font-bold">Bao Lô (b2, b3, b4)</h3>
+            <p className="text-sm">
+              Cược số 2, 3 hoặc 4 chữ số, trúng khi khớp với N số cuối của bất kỳ lô nào.
+            </p>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
