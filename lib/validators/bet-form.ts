@@ -1,12 +1,13 @@
+// lib/validators/bet-form.ts
 import * as z from 'zod';
 
 // Schema validation cho form đặt cược
 export const betFormSchema = z.object({
-  region: z.enum(['M1', 'M2'], {
-    required_error: 'Vui lòng chọn khu vực',
+  regions: z.array(z.enum(['M1', 'M2'])).min(1, {
+    message: 'Vui lòng chọn ít nhất một khu vực',
   }),
-  province: z.string().min(1, {
-    message: 'Vui lòng chọn tỉnh/thành phố',
+  provinces: z.array(z.string()).min(1, {
+    message: 'Vui lòng chọn ít nhất một tỉnh/thành phố',
   }),
   bet_type: z.string().min(1, {
     message: 'Vui lòng chọn loại cược',
@@ -27,7 +28,19 @@ export const betFormSchema = z.object({
 });
 
 // Type inferred từ schema
-export type BetFormValues = z.infer<typeof betFormSchema>;
+export type MultiBetFormValues = z.infer<typeof betFormSchema>;
+
+// Giữ lại schema cũ cho tương thích ngược
+export type BetFormValues = {
+  region: 'M1' | 'M2' | '';
+  province: string;
+  bet_type: string;
+  subtype?: string;
+  selection_method: 'direct' | 'zodiac' | 'hiLo' | 'oddEven' | 'pattern';
+  numbers: string[];
+  amount: number;
+  draw_date: string;
+};
 
 // Schema cho kết quả tính toán cược
 export const betCalculationSchema = z.object({
@@ -41,6 +54,22 @@ export const betCalculationSchema = z.object({
 });
 
 export type BetCalculationValues = z.infer<typeof betCalculationSchema>;
+
+// Schema cho kết quả tính toán cược nhiều tỉnh
+export const multiBetCalculationSchema = z.object({
+  totalStake: z.number(),
+  potentialWin: z.number(),
+  breakdowns: z.array(
+    z.object({
+      province: z.string(),
+      region: z.string(),
+      stake: z.number(),
+      potentialWin: z.number(),
+    })
+  ),
+});
+
+export type MultiBetCalculationValues = z.infer<typeof multiBetCalculationSchema>;
 
 // Hàm helper kiểm tra validity của form
 export function validateBetForm(data: any): { isValid: boolean; errors: Record<string, string> } {

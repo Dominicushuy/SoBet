@@ -1,7 +1,8 @@
+// app/bet/components/MultiBetForm.tsx
 import { useState, useEffect, useCallback } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { UseFormReturn, useForm } from 'react-hook-form';
+import { UseFormReturn } from 'react-hook-form';
 
 import AmountCalculator from '@/app/bet/components/AmountCalculator';
 import BetTypeSelector from '@/app/bet/components/BetTypeSelector';
@@ -10,22 +11,53 @@ import NumbersInput from '@/app/bet/components/NumbersInput';
 import { Button } from '@/components/ui/Button';
 import { Divider } from '@/components/ui/Divider';
 import { Form, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
-import ProvinceSelector from '@/components/ui/lottery/ProvinceSelector';
-import RegionSelector from '@/components/ui/lottery/RegionSelector';
+import MultiProvinceSelector from '@/components/ui/lottery/MultiProvinceSelector';
+import MultiRegionSelector from '@/components/ui/lottery/MultiRegionSelector';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { calculateBetAmount } from '@/lib/lottery/calculators';
+import { calculateBetAmount, calculateMultiProvinceBetAmount } from '@/lib/lottery/calculators';
 import { useSupabase } from '@/lib/supabase/client';
 import { getAllActiveRules, getRuleByCode } from '@/lib/supabase/queries';
+import { MultiBetFormValues } from '@/lib/validators/bet-form';
 import { useAuth } from '@/providers/AuthProvider';
-import { BetFormData } from '@/types/bet';
 
-interface BetFormProps {
-  form: UseFormReturn<BetFormData>;
-  onSubmit: (data: BetFormData) => void;
+interface MultiBetFormProps {
+  form: UseFormReturn<MultiBetFormValues>;
+  onSubmit: (data: MultiBetFormValues) => void;
   isSubmitting: boolean;
 }
 
-const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
+// Map các tỉnh đến miền tương ứng (M1 hoặc M2)
+const provinceRegionMap: Record<string, string> = {
+  // Miền Nam & Miền Trung (M1)
+  'TP. HCM': 'M1',
+  'Đồng Nai': 'M1',
+  'Cần Thơ': 'M1',
+  'Đồng Tháp': 'M1',
+  'Cà Mau': 'M1',
+  'Bến Tre': 'M1',
+  'Vũng Tàu': 'M1',
+  'Bạc Liêu': 'M1',
+  'Đà Nẵng': 'M1',
+  'Khánh Hòa': 'M1',
+  'Thừa T. Huế': 'M1',
+  'Quảng Nam': 'M1',
+  'Quảng Bình': 'M1',
+  'Quảng Trị': 'M1',
+  'Bình Định': 'M1',
+  'Phú Yên': 'M1',
+  'Gia Lai': 'M1',
+  'Ninh Thuận': 'M1',
+
+  // Miền Bắc (M2)
+  'Hà Nội': 'M2',
+  'Quảng Ninh': 'M2',
+  'Bắc Ninh': 'M2',
+  'Hải Phòng': 'M2',
+  'Nam Định': 'M2',
+  'Thái Bình': 'M2',
+};
+
+const MultiBetForm: React.FC<MultiBetFormProps> = ({ form, onSubmit, isSubmitting }) => {
   const { supabase } = useSupabase();
   const router = useRouter();
   const { user, balance, refreshUserData } = useAuth();
@@ -34,15 +66,15 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
   const [calculationResult, setCalculationResult] = useState<any>(null);
   const [selectedRule, setSelectedRule] = useState<any>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [formSubmitData, setFormSubmitData] = useState<BetFormData | null>(null);
+  const [formSubmitData, setFormSubmitData] = useState<MultiBetFormValues | null>(null);
   const [activeTab, setActiveTab] = useState('region');
   const [maxNumberSelections, setMaxNumberSelections] = useState(0);
 
   const { watch, setValue, reset, handleSubmit, formState } = form;
 
-  // Watch for changes to these fields
-  const selectedRegion = watch('region');
-  const selectedProvince = watch('province');
+  // Watch for changes to form fields
+  const selectedRegions = watch('regions');
+  const selectedProvinces = watch('provinces');
   const selectedBetType = watch('bet_type');
   const selectedSubtype = watch('subtype');
   const selectedNumbers = watch('numbers');
@@ -56,7 +88,7 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
   // Set pre-selected values from URL
   useEffect(() => {
     if (preSelectedRegion && (preSelectedRegion === 'M1' || preSelectedRegion === 'M2')) {
-      setValue('region', preSelectedRegion as 'M1' | 'M2');
+      setValue('regions', [preSelectedRegion as 'M1' | 'M2']);
     }
 
     if (preSelectedType) {
@@ -67,31 +99,47 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
   // Fetch available bet types when region changes
   useEffect(() => {
     const fetchBetTypes = async () => {
-      if (!selectedRegion) return;
+      if (!selectedRegions || selectedRegions.length === 0) return;
 
       try {
-        const rules = await getAllActiveRules(supabase, selectedRegion as any);
-        setAvailableBetTypes(rules);
+        // Nếu chọn cả hai miền, lấy các quy tắc cho cả hai
+        if (selectedRegions.includes('M1') && selectedRegions.includes('M2')) {
+          const rules = await getAllActiveRules(supabase, 'BOTH' as any);
+          setAvailableBetTypes(rules);
+        }
+        // Nếu chỉ chọn một miền, lấy quy tắc cho miền đó
+        else if (selectedRegions.length === 1) {
+          const rules = await getAllActiveRules(supabase, selectedRegions[0] as any);
+          setAvailableBetTypes(rules);
+        }
       } catch (error) {
         console.error('Error fetching bet types:', error);
       }
     };
 
     fetchBetTypes();
-  }, [selectedRegion, supabase]);
+  }, [selectedRegions, supabase]);
 
   // Fetch rule details when bet type changes
   useEffect(() => {
     const fetchRuleDetails = async () => {
-      if (!selectedBetType || !selectedRegion) return;
+      if (!selectedBetType || !selectedRegions || selectedRegions.length === 0) return;
 
       try {
-        const rule = await getRuleByCode(supabase, selectedBetType, selectedRegion as any);
-        setSelectedRule(rule);
+        // Nếu chọn một miền cụ thể, lấy rule cho miền đó
+        if (selectedRegions.length === 1) {
+          const rule = await getRuleByCode(supabase, selectedBetType, selectedRegions[0] as any);
+          setSelectedRule(rule);
+        }
+        // Nếu chọn cả hai miền, ưu tiên lấy rule cho BOTH
+        else {
+          const rule = await getRuleByCode(supabase, selectedBetType);
+          setSelectedRule(rule);
+        }
 
         // Set default subtype if available and not already set
-        if (rule?.variants && rule.variants.length > 0 && !selectedSubtype) {
-          setValue('subtype', rule.variants[0].code);
+        if (selectedRule?.variants && selectedRule.variants.length > 0 && !selectedSubtype) {
+          setValue('subtype', selectedRule.variants[0].code);
         }
 
         // Determine max number selection based on bet type
@@ -118,30 +166,64 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
     };
 
     fetchRuleDetails();
-  }, [selectedBetType, selectedSubtype, selectedRegion, supabase, setValue]);
+  }, [
+    selectedBetType,
+    selectedSubtype,
+    selectedRegions,
+    supabase,
+    setValue,
+    selectedRule?.variants,
+  ]);
 
   // Update calculation when relevant fields change
   useEffect(() => {
     const calculateAmount = async () => {
-      if (!selectedRule || !selectedNumbers || selectedNumbers.length === 0 || !betAmount) return;
+      if (
+        !selectedRule ||
+        !selectedNumbers ||
+        selectedNumbers.length === 0 ||
+        !betAmount ||
+        !selectedProvinces ||
+        selectedProvinces.length === 0
+      )
+        return;
 
       try {
-        const result = calculateBetAmount(
-          selectedRule,
-          selectedNumbers,
-          betAmount,
-          selectedSubtype,
-          selectedRegion
-        );
+        if (selectedProvinces.length === 1) {
+          // Tính toán cho một tỉnh
+          const region =
+            provinceRegionMap[selectedProvinces[0]] ||
+            (selectedProvinces[0].includes('M1') ? 'M1' : 'M2');
 
-        setCalculationResult(result);
+          const result = calculateBetAmount(
+            selectedRule,
+            selectedNumbers,
+            betAmount,
+            selectedSubtype,
+            region
+          );
+
+          setCalculationResult(result);
+        } else {
+          // Tính toán cho nhiều tỉnh
+          const result = calculateMultiProvinceBetAmount(
+            selectedRule,
+            selectedNumbers,
+            betAmount,
+            selectedSubtype,
+            selectedProvinces,
+            provinceRegionMap
+          );
+
+          setCalculationResult(result);
+        }
       } catch (error) {
         console.error('Error calculating bet amount:', error);
       }
     };
 
     calculateAmount();
-  }, [selectedRule, selectedNumbers, betAmount, selectedSubtype, selectedRegion]);
+  }, [selectedRule, selectedNumbers, betAmount, selectedSubtype, selectedProvinces]);
 
   // Handle date change
   const handleDateChange = (date: Date) => {
@@ -149,19 +231,19 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
     setValue('draw_date', date.toISOString().split('T')[0]);
   };
 
-  // Handle province change
-  const handleProvinceChange = (province: string) => {
-    setValue('province', province);
-  };
-
-  // Handle region change
-  const handleRegionChange = (region: string) => {
-    setValue('region', region);
-    // Reset province and bet type when region changes
-    setValue('province', '');
+  // Handle regions change
+  const handleRegionsChange = (regions: string[]) => {
+    setValue('regions', regions as ['M1' | 'M2']);
+    // Reset provinces and bet type when region changes
+    setValue('provinces', []);
     setValue('bet_type', '');
     setValue('subtype', '');
     setValue('numbers', []);
+  };
+
+  // Handle provinces change
+  const handleProvincesChange = (provinces: string[]) => {
+    setValue('provinces', provinces);
   };
 
   // Handle tab change
@@ -170,7 +252,7 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
   };
 
   // Handle form submission with confirmation
-  const handleFormSubmit = (data: BetFormData) => {
+  const handleFormSubmit = (data: MultiBetFormValues) => {
     setFormSubmitData(data);
     setShowConfirmDialog(true);
   };
@@ -216,7 +298,7 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
   };
 
   // Check if there's missing data to block form tabs
-  const canAccessBetTypeTab = !!selectedRegion && !!selectedProvince;
+  const canAccessBetTypeTab = selectedRegions.length > 0 && selectedProvinces.length > 0;
   const canAccessNumbersTab = canAccessBetTypeTab && !!selectedBetType;
   const canAccessConfirmTab = canAccessNumbersTab && selectedNumbers.length > 0;
 
@@ -242,13 +324,13 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
             <div className="space-y-4">
               <FormField
                 control={form.control}
-                name="region"
+                name="regions"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Chọn khu vực</FormLabel>
-                    <RegionSelector
-                      selectedRegion={field.value}
-                      onRegionChange={(region) => handleRegionChange(region)}
+                    <MultiRegionSelector
+                      selectedRegions={field.value}
+                      onRegionsChange={handleRegionsChange}
                       disabled={isSubmitting}
                     />
                     <FormMessage />
@@ -256,17 +338,17 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
                 )}
               />
 
-              {selectedRegion && (
+              {selectedRegions.length > 0 && (
                 <FormField
                   control={form.control}
-                  name="province"
+                  name="provinces"
                   render={({ field }) => (
                     <FormItem>
-                      <ProvinceSelector
-                        selectedRegion={selectedRegion}
+                      <MultiProvinceSelector
+                        selectedRegions={selectedRegions}
                         selectedDate={selectedDate}
-                        selectedProvince={field.value || ''}
-                        onProvinceChange={handleProvinceChange}
+                        selectedProvinces={field.value}
+                        onProvincesChange={handleProvincesChange}
                         disabled={isSubmitting}
                       />
                       <FormMessage />
@@ -276,7 +358,7 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
               )}
             </div>
 
-            {selectedRegion && selectedProvince && (
+            {selectedRegions.length > 0 && selectedProvinces.length > 0 && (
               <div className="flex justify-end">
                 <Button type="button" variant="lottery" onClick={handleNextTab}>
                   Tiếp tục
@@ -301,7 +383,7 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
                       setValue('subtype', ''); // Reset subtype
                       setValue('numbers', []); // Reset numbers
                     }}
-                    region={selectedRegion}
+                    region={selectedRegions.length === 1 ? selectedRegions[0] : 'BOTH'}
                     disabled={isSubmitting}
                   />
                   <FormMessage />
@@ -429,10 +511,14 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
               <h3 className="mb-2 font-semibold">Thông tin đặt cược</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="text-gray-500">Khu vực:</div>
-                <div>{selectedRegion === 'M1' ? 'Miền Nam/Trung' : 'Miền Bắc'}</div>
+                <div>
+                  {selectedRegions
+                    .map((r) => (r === 'M1' ? 'Miền Nam/Trung' : 'Miền Bắc'))
+                    .join(', ')}
+                </div>
 
                 <div className="text-gray-500">Tỉnh/Thành phố:</div>
-                <div>{selectedProvince}</div>
+                <div>{selectedProvinces.join(', ')}</div>
 
                 <div className="text-gray-500">Ngày xổ:</div>
                 <div>
@@ -464,12 +550,12 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
                   <>
                     <div className="text-gray-500">Tổng tiền đóng:</div>
                     <div className="font-semibold">
-                      {calculationResult.totalStake.toLocaleString('vi-VN')} VND
+                      {calculationResult.totalStake?.toLocaleString('vi-VN')} VND
                     </div>
 
                     <div className="text-gray-500">Tiềm năng thắng:</div>
                     <div className="font-semibold text-lottery-win">
-                      {calculationResult.potentialWin.toLocaleString('vi-VN')} VND
+                      {calculationResult.potentialWin?.toLocaleString('vi-VN')} VND
                     </div>
                   </>
                 )}
@@ -500,8 +586,8 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
           onClose={handleCancelConfirmation}
           onConfirm={handleConfirmBet}
           data={{
-            region: selectedRegion,
-            province: selectedProvince,
+            region: selectedRegions.join(', '),
+            province: selectedProvinces.join(', '),
             betType: selectedRule?.name || selectedBetType,
             subtype:
               selectedRule?.variants?.find((v: any) => v.code === selectedSubtype)?.name ||
@@ -519,4 +605,4 @@ const BetForm: React.FC<BetFormProps> = ({ form, onSubmit, isSubmitting }) => {
   );
 };
 
-export default BetForm;
+export default MultiBetForm;

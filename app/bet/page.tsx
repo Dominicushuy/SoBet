@@ -7,15 +7,14 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 
-import BetForm from '@/app/bet/components/BetForm';
-import SuccessDialog from '@/app/bet/components/SuccessDialog';
+import MultiBetForm from '@/app/bet/components/MultiBetForm';
+import MultiSuccessDialog from '@/app/bet/components/MultiSuccessDialog';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { createNewBet } from '@/lib/actions/bets';
-import { betFormSchema } from '@/lib/validators/bet-form';
+import { createMultiProvinceBet } from '@/lib/actions/multi-bets';
+import { betFormSchema, MultiBetFormValues } from '@/lib/validators/bet-form';
 import { useAuth } from '@/providers/AuthProvider';
-import { BetFormData } from '@/types/bet';
 
 export default function BetPage() {
   const router = useRouter();
@@ -26,10 +25,12 @@ export default function BetPage() {
     isSuccess: boolean;
     isError: boolean;
     message: string;
-    betCode?: string;
+    betCodes?: string[];
     insufficientFunds?: boolean;
     requiredAmount?: number;
     loginRequired?: boolean;
+    provinceCount?: number;
+    totalStake?: number;
   }>({
     isLoading: false,
     isSuccess: false,
@@ -53,21 +54,24 @@ export default function BetPage() {
   const preSelectedType = searchParams.get('type') || '';
 
   // Initialize form with react-hook-form and zod validation
-  const form = useForm<BetFormData>({
+  const form = useForm<MultiBetFormValues>({
     resolver: zodResolver(betFormSchema),
     defaultValues: {
-      region: (preSelectedRegion as 'M1' | 'M2' | '') || '',
+      regions:
+        preSelectedRegion && (preSelectedRegion === 'M1' || preSelectedRegion === 'M2')
+          ? [preSelectedRegion as 'M1' | 'M2']
+          : [],
+      provinces: [],
       bet_type: preSelectedType || '',
       selection_method: 'direct',
       numbers: [],
       amount: 10000, // Default amount in VND
       draw_date: new Date().toISOString().split('T')[0], // Today's date
-      province: '',
       subtype: '',
     },
   });
 
-  const handleSubmit = async (data: BetFormData) => {
+  const handleSubmit = async (data: MultiBetFormValues) => {
     try {
       if (!isAuthenticated) {
         setFormStatus({
@@ -88,7 +92,7 @@ export default function BetPage() {
       });
 
       // Call server action to create bet
-      const result = await createNewBet(data);
+      const result = await createMultiProvinceBet(data);
 
       if (result.error) {
         setFormStatus({
@@ -109,7 +113,9 @@ export default function BetPage() {
         isSuccess: true,
         isError: false,
         message: 'Đặt cược thành công!',
-        betCode: result.betCode,
+        betCodes: result.betCodes,
+        provinceCount: result.provinceCount,
+        totalStake: result.totalStake,
       });
 
       // Show success dialog
@@ -131,13 +137,13 @@ export default function BetPage() {
 
     // Reset the form
     form.reset({
-      region: '',
+      regions: [],
+      provinces: [],
       bet_type: '',
       selection_method: 'direct',
       numbers: [],
       amount: 10000,
       draw_date: new Date().toISOString().split('T')[0],
-      province: '',
       subtype: '',
     });
   };
@@ -145,11 +151,7 @@ export default function BetPage() {
   // Handle view bet details after success
   const handleViewBet = () => {
     setShowSuccessDialog(false);
-    if (formStatus.betCode) {
-      router.push(`/account/bets?code=${formStatus.betCode}`);
-    } else {
-      router.push('/account/bets');
-    }
+    router.push('/account/bets');
   };
 
   // Handle adding money when insufficient funds
@@ -204,17 +206,19 @@ export default function BetPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <BetForm form={form} onSubmit={handleSubmit} isSubmitting={formStatus.isLoading} />
+          <MultiBetForm form={form} onSubmit={handleSubmit} isSubmitting={formStatus.isLoading} />
         </CardContent>
       </Card>
 
       {/* Success Dialog */}
-      {showSuccessDialog && formStatus.betCode && (
-        <SuccessDialog
+      {showSuccessDialog && formStatus.betCodes && (
+        <MultiSuccessDialog
           open={showSuccessDialog}
           onClose={handleSuccessDialogClose}
-          betCode={formStatus.betCode}
           onViewBet={handleViewBet}
+          betCodes={formStatus.betCodes}
+          provinceCount={formStatus.provinceCount || 0}
+          totalStake={formStatus.totalStake || 0}
         />
       )}
     </div>

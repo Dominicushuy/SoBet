@@ -8,7 +8,7 @@ Tôi đang xây dựng ứng dụng web cá cược xổ số dựa trên các t
 ### TÀI LIỆU THAM KHẢO
 - Luật chơi và các loại cược: `Rules Detailed Document.md`
 - Cấu trúc dữ liệu đài xổ số theo ngày: `danh_sach_tinh_theo_ngay.json`
-- Phân tích ban đầu: `Rules Analysis.md`
+- Cấu trúc dữ liệu kết quả xổ số: `ket_qua_xo_so.json`
 
 ### YÊU CẦU PHÂN TÍCH
 1. Danh sách đầy đủ các loại cược (đầu đuôi, xỉu chủ, bao lô, v.v.)
@@ -46,14 +46,6 @@ Tôi đang xây dựng ứng dụng web cá cược xổ số dựa trên các t
      - Tỷ lệ thưởng cho từng loại cược
      - Ẩn/hiện các loại cược
      - Quản lý kết quả xổ số
-
-### ĐẦU RA MONG MUỐN
-- Phân tích kỹ thuật đầy đủ về logic nghiệp vụ
-- Cấu trúc JSON mẫu hoàn chỉnh cho tất cả các đối tượng
-- TypeScript interfaces và ví dụ cách sử dụng
-- Utility functions với giải thích cách hoạt động
-- Gợi ý triển khai database schema cho Supabase
-- Demo code cho form đặt cược và logic đối soát kết quả
 
 Kết quả của phân tích này sẽ được sử dụng để triển khai các components chính của ứng dụng, bao gồm form builder đặt cược, trang hiển thị kết quả, và backend API services.
 ```

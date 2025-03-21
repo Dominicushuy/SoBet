@@ -339,6 +339,18 @@ CREATE POLICY "Users can view their own transactions" ON public.transactions
 CREATE POLICY "Admins can manage transactions" ON public.transactions
     USING (auth.jwt() ->> 'role' = 'admin');
 
+-- Thêm policy cho phép người dùng tạo giao dịch của chính mình
+CREATE POLICY "Users can create their own transactions" 
+ON public.transactions
+FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+-- Nếu cần thêm policy cho phép cập nhật giao dịch
+CREATE POLICY "Users can update their own transactions" 
+ON public.transactions
+FOR UPDATE
+USING (auth.uid() = user_id);
+
 -- Policy cho bets (lượt cược)
 CREATE POLICY "Users can view their own bets" ON public.bets
     FOR SELECT
