@@ -1347,12 +1347,309 @@ export class BetTypeService {
 export default BetTypeService;
 ```
 
-## 9. Triển khai ResultVerificationService để đối soát kết quả
+## 9. Adapter chuyển đổi dữ liệu kết quả xổ số
+
+```typescript
+import { LotteryResult } from './types';
+
+/**
+ * Interface cho dữ liệu kết quả nhận được từ API
+ */
+interface LotteryApiResult {
+  metadata: {
+    version: string;
+    nguon: string;
+    ngayLayDuLieu: string;
+    tongSoMien: number;
+    tongSoNgay: number;
+    thuDaLay: string;
+    ngayDaLay: string;
+    quyTacApDung: string;
+  };
+  duLieu: {
+    [day: string]: {
+      'mien-bac': {
+        tinh: string;
+        ngay: string;
+        thu: string;
+        loaiVe: string;
+        ketQua: {
+          giaiDacBiet: string[];
+          giaiNhat: string[];
+          giaiNhi: string[];
+          giaiBa: string[];
+          giaiTu: string[];
+          giaiNam: string[];
+          giaiSau: string[];
+          giaiBay: string[];
+        };
+      };
+      'mien-trung': {
+        ngay: string;
+        thu: string;
+        cacTinh: {
+          tinh: string;
+          maTinh: string;
+          ketQua: {
+            giaiDacBiet: string[];
+            giaiNhat: string[];
+            giaiNhi: string[];
+            giaiBa: string[];
+            giaiTu: string[];
+            giaiNam: string[];
+            giaiSau: string[];
+            giaiBay: string[];
+            giaiTam: string[];
+          };
+        }[];
+      };
+      'mien-nam': {
+        ngay: string;
+        thu: string;
+        cacTinh: {
+          tinh: string;
+          maTinh: string;
+          ketQua: {
+            giaiDacBiet: string[];
+            giaiNhat: string[];
+            giaiNhi: string[];
+            giaiBa: string[];
+            giaiTu: string[];
+            giaiNam: string[];
+            giaiSau: string[];
+            giaiBay: string[];
+            giaiTam: string[];
+          };
+        }[];
+      };
+    };
+  };
+}
+
+/**
+ * Map chuyển đổi tên giải từ API sang tên giải trong service
+ */
+const prizeNameMap: Record<string, string> = {
+  giaiDacBiet: 'ĐB',
+  giaiNhat: '1',
+  giaiNhi: '2',
+  giaiBa: '3',
+  giaiTu: '4',
+  giaiNam: '5',
+  giaiSau: '6',
+  giaiBay: '7',
+  giaiTam: '8',
+};
+
+/**
+ * Chuyển đổi dữ liệu kết quả từ API sang định dạng chuẩn cho service
+ * @param apiResult Dữ liệu kết quả từ API
+ * @param dayKey Key của ngày (thu-hai, thu-ba, ...)
+ * @param region Miền (mien-bac, mien-trung, mien-nam)
+ * @param provinceIndex Chỉ số của tỉnh (chỉ dùng cho miền Trung và miền Nam)
+ * @returns Dữ liệu kết quả đã chuyển đổi
+ */
+export function convertToLotteryResult(
+  apiResult: LotteryApiResult,
+  dayKey: string,
+  region: 'mien-bac' | 'mien-trung' | 'mien-nam',
+  provinceIndex: number = 0
+): LotteryResult {
+  const dayData = apiResult.duLieu[dayKey];
+
+  if (!dayData) {
+    throw new Error(`Không tìm thấy dữ liệu cho ngày ${dayKey}`);
+  }
+
+  const regionData = dayData[region];
+
+  if (!regionData) {
+    throw new Error(`Không tìm thấy dữ liệu cho miền ${region}`);
+  }
+
+  // Xử lý cho Miền Bắc
+  if (region === 'mien-bac') {
+    const { tinh, ngay, ketQua } = regionData;
+    const standardResults: Record<string, string[]> = {};
+
+    // Chuyển đổi tên giải
+    for (const [apiPrizeName, apiPrizeValue] of Object.entries(ketQua)) {
+      const standardPrizeName = prizeNameMap[apiPrizeName];
+      standardResults[standardPrizeName] = apiPrizeValue;
+    }
+
+    return {
+      date: new Date(ngay),
+      region: 'M2', // Miền Bắc luôn là M2
+      province: tinh,
+      results: standardResults,
+    };
+  }
+
+  // Xử lý cho Miền Trung và Miền Nam
+  else {
+    const { ngay, cacTinh } = regionData;
+
+    if (!cacTinh || cacTinh.length === 0) {
+      throw new Error(`Không tìm thấy dữ liệu các tỉnh cho miền ${region}`);
+    }
+
+    if (provinceIndex >= cacTinh.length) {
+      throw new Error(`Chỉ số tỉnh ${provinceIndex} không hợp lệ cho miền ${region}`);
+    }
+
+    const { tinh, ketQua } = cacTinh[provinceIndex];
+    const standardResults: Record<string, string[]> = {};
+
+    // Chuyển đổi tên giải
+    for (const [apiPrizeName, apiPrizeValue] of Object.entries(ketQua)) {
+      const standardPrizeName = prizeNameMap[apiPrizeName];
+      standardResults[standardPrizeName] = apiPrizeValue;
+    }
+
+    return {
+      date: new Date(ngay),
+      region: 'M1', // Miền Trung và Miền Nam luôn là M1
+      province: tinh,
+      results: standardResults,
+    };
+  }
+}
+
+/**
+ * Chuyển đổi toàn bộ dữ liệu kết quả từ API sang mảng định dạng chuẩn cho service
+ * @param apiResult Dữ liệu kết quả từ API
+ * @returns Mảng dữ liệu kết quả đã chuyển đổi
+ */
+export function convertAllResults(apiResult: LotteryApiResult): LotteryResult[] {
+  const results: LotteryResult[] = [];
+
+  // Duyệt qua tất cả các ngày
+  for (const dayKey of Object.keys(apiResult.duLieu)) {
+    const dayData = apiResult.duLieu[dayKey];
+
+    // Xử lý Miền Bắc
+    if (dayData['mien-bac']) {
+      results.push(convertToLotteryResult(apiResult, dayKey, 'mien-bac'));
+    }
+
+    // Xử lý Miền Trung
+    if (dayData['mien-trung'] && dayData['mien-trung'].cacTinh) {
+      for (let i = 0; i < dayData['mien-trung'].cacTinh.length; i++) {
+        results.push(convertToLotteryResult(apiResult, dayKey, 'mien-trung', i));
+      }
+    }
+
+    // Xử lý Miền Nam
+    if (dayData['mien-nam'] && dayData['mien-nam'].cacTinh) {
+      for (let i = 0; i < dayData['mien-nam'].cacTinh.length; i++) {
+        results.push(convertToLotteryResult(apiResult, dayKey, 'mien-nam', i));
+      }
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Tìm kết quả xổ số cho một tỉnh cụ thể
+ * @param apiResult Dữ liệu kết quả từ API
+ * @param provinceName Tên tỉnh cần tìm
+ * @returns Kết quả xổ số đã chuyển đổi hoặc null nếu không tìm thấy
+ */
+export function findResultByProvince(
+  apiResult: LotteryApiResult,
+  provinceName: string
+): LotteryResult | null {
+  const allResults = convertAllResults(apiResult);
+  return allResults.find((result) => result.province === provinceName) || null;
+}
+
+/**
+ * Tìm kết quả xổ số theo miền và ngày
+ * @param apiResult Dữ liệu kết quả từ API
+ * @param region Miền (M1 hoặc M2)
+ * @param date Ngày cần tìm
+ * @returns Mảng kết quả xổ số đã chuyển đổi
+ */
+export function findResultsByRegionAndDate(
+  apiResult: LotteryApiResult,
+  region: 'M1' | 'M2',
+  date: Date
+): LotteryResult[] {
+  const dateStr = date.toISOString().split('T')[0]; // Format yyyy-mm-dd
+  const allResults = convertAllResults(apiResult);
+
+  return allResults.filter((result) => {
+    const resultDateStr = result.date.toISOString().split('T')[0];
+    return result.region === region && resultDateStr === dateStr;
+  });
+}
+
+/**
+ * Hàm quick-check để kiểm tra dữ liệu API có dùng được với service không
+ * @param apiResult Dữ liệu kết quả từ API
+ * @returns true nếu dữ liệu hợp lệ, false nếu không
+ */
+export function validateApiResult(apiResult: LotteryApiResult): boolean {
+  try {
+    // Check metadata
+    if (!apiResult.metadata || !apiResult.metadata.ngayDaLay) {
+      return false;
+    }
+
+    // Check duLieu
+    if (!apiResult.duLieu || Object.keys(apiResult.duLieu).length === 0) {
+      return false;
+    }
+
+    // Lấy key ngày đầu tiên
+    const firstDayKey = Object.keys(apiResult.duLieu)[0];
+    const dayData = apiResult.duLieu[firstDayKey];
+
+    // Check dữ liệu miền Bắc
+    if (
+      dayData['mien-bac'] &&
+      (!dayData['mien-bac'].ketQua || !dayData['mien-bac'].ketQua.giaiDacBiet)
+    ) {
+      return false;
+    }
+
+    // Check dữ liệu miền Trung
+    if (
+      dayData['mien-trung'] &&
+      (!dayData['mien-trung'].cacTinh ||
+        !dayData['mien-trung'].cacTinh[0].ketQua ||
+        !dayData['mien-trung'].cacTinh[0].ketQua.giaiDacBiet)
+    ) {
+      return false;
+    }
+
+    // Check dữ liệu miền Nam
+    if (
+      dayData['mien-nam'] &&
+      (!dayData['mien-nam'].cacTinh ||
+        !dayData['mien-nam'].cacTinh[0].ketQua ||
+        !dayData['mien-nam'].cacTinh[0].ketQua.giaiDacBiet)
+    ) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error validating API result:', error);
+    return false;
+  }
+}
+```
+
+## 10. Triển khai ResultVerificationService để đối soát kết quả
 
 ```typescript
 import { createClient } from '@/lib/supabase/client';
 import { BetType, LotteryResult, BetCheckResult } from './types';
 import BetTypeService from './bet-type-service';
+import { convertToLotteryResult, validateApiResult } from './lottery-result-adapter';
 
 interface BetData {
   id: string;
@@ -1372,6 +1669,110 @@ interface BetData {
  * Service xử lý đối soát kết quả cược
  */
 export class ResultVerificationService {
+  /**
+   * Kiểm tra kết quả cược với dữ liệu API
+   * @param betId ID của vé cược
+   * @param apiResult Dữ liệu kết quả từ API
+   * @param provinceName Tên tỉnh (nếu không có sẽ tự tìm từ vé cược)
+   * @returns Kết quả đối soát
+   */
+  static async verifyBetWithApiResult(
+    betId: string,
+    apiResult: any,
+    provinceName?: string
+  ): Promise<BetCheckResult | null> {
+    try {
+      // Kiểm tra dữ liệu API
+      if (!validateApiResult(apiResult)) {
+        throw new Error('Dữ liệu kết quả xổ số không hợp lệ');
+      }
+
+      // Lấy thông tin vé cược
+      const betData = await this.getBetData(betId);
+      if (!betData) return null;
+
+      // Lấy thông tin loại cược
+      const betType = await BetTypeService.getBetTypeById(betData.rule_id);
+      if (!betType) return null;
+
+      // Xác định tỉnh cần kiểm tra
+      const province = provinceName || (await this.getProvinceFromBet(betData));
+      if (!province) {
+        throw new Error('Không thể xác định tỉnh từ vé cược');
+      }
+
+      // Tìm thứ trong tuần từ ngày
+      const drawDate = new Date(betData.draw_date);
+      const dayKey = this.getDayKeyFromDate(drawDate);
+
+      // Xác định miền từ region trong bet
+      const region = betData.region === 'M1' ? 'mien-trung' : 'mien-bac';
+
+      // Tìm chỉ số của tỉnh trong mảng cacTinh
+      let provinceIndex = 0;
+      if (region !== 'mien-bac') {
+        const mienData = apiResult.duLieu[dayKey][region];
+        provinceIndex = mienData.cacTinh.findIndex((p: any) => p.tinh === province);
+
+        // Nếu không tìm thấy trong miền Trung, thử tìm trong miền Nam
+        if (provinceIndex === -1) {
+          const mienNamData = apiResult.duLieu[dayKey]['mien-nam'];
+          provinceIndex = mienNamData.cacTinh.findIndex((p: any) => p.tinh === province);
+          if (provinceIndex !== -1) {
+            // Nếu tìm thấy trong miền Nam
+            const mienRegion = 'mien-nam';
+            const lotteryResult = convertToLotteryResult(
+              apiResult,
+              dayKey,
+              mienRegion,
+              provinceIndex
+            );
+            return this.verifyBet(betId, lotteryResult);
+          }
+        }
+      }
+
+      // Nếu tìm thấy tỉnh hoặc là miền Bắc
+      const lotteryResult = convertToLotteryResult(apiResult, dayKey, region, provinceIndex);
+      return this.verifyBet(betId, lotteryResult);
+    } catch (error) {
+      console.error('Error verifying bet with API result:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Lấy key ngày trong tuần từ date
+   * @param date Ngày cần chuyển đổi
+   * @returns Key ngày trong tuần (thu-hai, thu-ba, ...)
+   */
+  private static getDayKeyFromDate(date: Date): string {
+    const dayMap = ['chu-nhat', 'thu-hai', 'thu-ba', 'thu-tu', 'thu-nam', 'thu-sau', 'thu-bay'];
+    return dayMap[date.getDay()];
+  }
+
+  /**
+   * Lấy tên tỉnh từ vé cược (cần triển khai dựa trên cấu trúc dữ liệu)
+   * @param betData Dữ liệu vé cược
+   * @returns Tên tỉnh
+   */
+  private static async getProvinceFromBet(betData: BetData): Promise<string | null> {
+    // Giả sử province được lưu trong một field của bảng bets
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('bets')
+      .select('province')
+      .eq('id', betData.id)
+      .single();
+
+    if (error || !data) {
+      console.error('Error getting province from bet:', error);
+      return null;
+    }
+
+    return data.province;
+  }
+
   /**
    * Kiểm tra kết quả cược dựa trên các thông số đầu vào
    * @param betId ID của vé cược

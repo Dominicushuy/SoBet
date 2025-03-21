@@ -3,321 +3,278 @@
 ## PROMPT ĐẶC BIỆT - CHẠY ĐẦU TIÊN
 
 ```
-Tôi đang xây dựng ứng dụng cá cược xổ số dựa trên tài liệu sau:
-Kiểm tra thông tin trong file `Rules Detailed Document.md` để hiểu rõ về luật chơi và các loại cược xổ số.
+Tôi đang xây dựng ứng dụng web cá cược xổ số dựa trên các tài liệu đã cung cấp. Hãy phân tích toàn diện các quy tắc và cấu trúc dữ liệu để tôi có thể triển khai hệ thống chính xác.
 
-Thông tin các đài xổ số theo ngày:
-Kiểm tra thông tin trong file `danh_sach_tinh_theo_ngay.json` để hiểu rõ về cấu trúc dữ liệu các đài xổ số theo ngày.
+### TÀI LIỆU THAM KHẢO
+- Luật chơi và các loại cược: `Rules Detailed Document.md`
+- Cấu trúc dữ liệu đài xổ số theo ngày: `danh_sach_tinh_theo_ngay.json`
+- Phân tích ban đầu: `Rules Analysis.md`
 
-Hãy phân tích kỹ và tóm tắt các thông tin quan trọng sau:
+### YÊU CẦU PHÂN TÍCH
+1. Danh sách đầy đủ các loại cược (đầu đuôi, xỉu chủ, bao lô, v.v.)
+2. Chi tiết cho mỗi loại cược:
+   - Nguyên tắc cơ bản & điều kiện thắng
+   - Cách tính tiền đóng (công thức cụ thể)
+   - Tỷ lệ thưởng (đơn vị thắng)
+   - Phạm vi áp dụng (M1, M2 hoặc cả hai)
+   - Các subtypes nếu có (như đầu đuôi có subtypes dd, dau, duoi)
 
-1. Danh sách tất cả các loại cược có trong tài liệu (đầu đuôi, xỉu chủ, bao lô, v.v.)
-2. Cho mỗi loại cược, tóm tắt:
-   - Nguyên tắc cơ bản
-   - Cách tính tiền đóng
-   - Tỷ lệ thắng
-   - Áp dụng cho miền nào (M1, M2 hoặc cả hai)
-3. Tạo một object JSON chứa thông tin về các loại cược để tôi có thể sử dụng làm dữ liệu mẫu trong database
-4. Giải thích ngắn gọn logic đối soát kết quả cho từng loại cược (cách xác định người thắng cuộc)
-5. Tạo TypeScript interfaces cho tất cả các đối tượng trong Object JSON (betTypes và numberSelectionMethods)
-6. Tạo các utility functions cơ bản cho việc tính toán tiền cược dựa trên các quy tắc
-7. Tạo TypeScript interfaces và JSON mẫu cho cấu trúc dữ liệu các đài xổ số theo ngày
+3. Cấu trúc JSON mẫu cho:
+   - Các loại cược (betTypes)
+   - Phương thức chọn số (numberSelectionMethods)
+   - Kết quả xổ số (lotteryResults) - cần mẫu JSON cụ thể để đối soát kết quả
+   - Cấu trúc dữ liệu đài xổ số theo ngày
 
-Tôi cần hiểu rõ logic nghiệp vụ để lập trình chính xác form builder đặt cược và tính năng đối soát kết quả. Kết quả của phân tích này sẽ được sử dụng cho các prompt tiếp theo.
+4. Logic đối soát chi tiết:
+   - Cách xác định trúng thưởng cho từng loại cược
+   - Công thức tính tiền thắng
+   - Xử lý các trường hợp đặc biệt (nhiều lô trúng, trúng theo tỷ lệ khác nhau)
+
+5. TypeScript interfaces đầy đủ cho:
+   - Tất cả các đối tượng trong các JSON mẫu
+   - Models cho database
+   - Types cho form inputs và validation
+
+6. Utility functions:
+   - Tính toán tiền đóng cho từng loại cược
+   - Tính toán tiền thắng tiềm năng
+   - Tạo số tự động theo các quy tắc (con giáp, đảo số, tài xỉu, v.v.)
+   - Helper functions cho việc đối soát kết quả
+
+7. Yêu cầu quản trị:
+   - Cấu trúc database để admin có thể thay đổi:
+     - Tỷ lệ thưởng cho từng loại cược
+     - Ẩn/hiện các loại cược
+     - Quản lý kết quả xổ số
+
+### ĐẦU RA MONG MUỐN
+- Phân tích kỹ thuật đầy đủ về logic nghiệp vụ
+- Cấu trúc JSON mẫu hoàn chỉnh cho tất cả các đối tượng
+- TypeScript interfaces và ví dụ cách sử dụng
+- Utility functions với giải thích cách hoạt động
+- Gợi ý triển khai database schema cho Supabase
+- Demo code cho form đặt cược và logic đối soát kết quả
+
+Kết quả của phân tích này sẽ được sử dụng để triển khai các components chính của ứng dụng, bao gồm form builder đặt cược, trang hiển thị kết quả, và backend API services.
 ```
 
-## NGÀY 1: SETUP DỰ ÁN & ADMIN PANEL
-
-### Task 1: Setup dự án ban đầu
+## TASK 1: SETUP DỰ ÁN (CẬP NHẬT)
 
 ```
-Tôi đang xây dựng ứng dụng cá cược xổ số với các loại cược và luật chơi như đã phân tích sau:
+Dựa trên schema database và các interfaces đã được phân tích, tôi cần khởi tạo dự án Next.js với các tệp cấu hình cần thiết.
 
-[Dán phần tóm tắt các loại cược từ PROMPT ĐẶC BIỆT vào đây]
+Trong phân tích, chúng ta đã có:
+- Schema SQL đầy đủ với các bảng users, provinces, lottery_schedules, rules, bets, results, wallets, transactions
+- TypeScript interfaces cho các đối tượng dữ liệu
+- Logic nghiệp vụ cho tính toán tiền cược và kiểm tra kết quả
 
-Tôi cần khởi tạo nhanh dự án Next.js 15 với Tailwind CSS và Supabase. Dự án cần hỗ trợ chọn đài xổ số cụ thể theo ngày trong tuần. Hãy cung cấp:
+Hãy cung cấp:
+1. Lệnh khởi tạo dự án Next.js 15 với app router và TypeScript
+2. Danh sách dependencies cập nhật (bao gồm các thư viện UI, form validation, state management)
+3. Cấu trúc thư mục chi tiết tương thích với schema và interfaces đã phân tích
+4. Cấu hình tailwind.config.js với theme phù hợp cho ứng dụng xổ số (bổ sung các màu: lottery-primary, lottery-secondary, lottery-win, lottery-lose)
+5. Cấu hình .env.local template
+6. Mẫu global.css cơ bản
+7. Ví dụ layout.tsx và page.tsx cơ bản
 
-1. Lệnh khởi tạo dự án với Next.js 15 app router và Typescript
-2. Danh sách dependencies tối thiểu cần cài đặt (Supabase, react-hook-form, zod, UI components cơ bản)
-3. Cấu trúc thư mục cơ bản chỉ tập trung vào 3 tính năng chính:
-   - Form builder đặt cược (bao gồm chọn đài cụ thể)
-   - Admin cài đặt quy tắc/luật chơi
-   - Đối soát kết quả thủ công
-4. Nội dung .env.local với các biến môi trường Supabase
-5. Cấu hình tailwind.config.js với theme cơ bản phù hợp cho ứng dụng cá cược xổ số
-6. package.json với scripts cần thiết
-
-Chỉ cần đủ để chạy demo, không cần authentication phức tạp hay đầy đủ các tính năng.
+Hãy tạo cấu hình phù hợp với cấu trúc đã phân tích, tập trung vào các chức năng chính: đặt cược, quản lý luật chơi, và đối soát kết quả.
 ```
 
-### Task 2: Thiết lập Supabase & Database Schema
+## TASK 2: THIẾT LẬP SUPABASE & DATABASE SCHEMA (CẬP NHẬT)
 
 ```
-Dựa trên phân tích luật chơi xổ số và thông tin các đài xổ số theo ngày sau:
+Trong phân tích trước, chúng ta đã có schema SQL đầy đủ với cấu trúc:
+- 8 bảng chính: users, provinces, lottery_schedules, rules, bets, results, wallets, transactions
+- Các ràng buộc và chỉ mục đã được thiết lập
+- Functions và triggers cho tính năng tự động
+- Row Level Security (RLS) cho bảo mật
+- Dữ liệu mẫu cho provinces, rules và lottery_schedules
 
-[Dán phần JSON object và TypeScript interfaces từ PROMPT ĐẶC BIỆT vào đây]
-[Dán phần phân tích về cấu trúc dữ liệu các đài xổ số theo ngày vào đây]
+Hãy cung cấp:
+1. Hướng dẫn triển khai schema đã phân tích vào Supabase thông qua SQL Editor
+2. Code TypeScript để thiết lập Supabase Client cho cả client-side và server-side
+3. Ví dụ về cách query dữ liệu từ các bảng đã tạo
+4. Ví dụ về cách thêm/cập nhật dữ liệu vào các bảng
+5. Mẫu về cách triển khai Server Action để tương tác với Supabase
+6. Các types/interfaces TypeScript cần thiết cho Supabase
 
-Tôi cần thiết lập database schema trên Supabase cho ứng dụng demo. Hãy cung cấp SQL scripts để tạo các tables sau:
-
-1. `rules`: lưu thông tin về luật chơi và tỷ lệ (bao gồm: id, rule_code, name, description, region, bet_type, rate, active, stake_formula, variants (JSONB))
-2. `bets`: lưu thông tin cược (id, user_id, bet_code, rule_id, region, province_id, chosen_numbers, amount, total_amount, potential_win, status, draw_date, result, won_amount)
-3. `users`: thông tin user đơn giản (id, username, email, role)
-4. `results`: lưu kết quả xổ số (id, draw_date, region, province_id, winning_numbers (JSONB))
-5. `provinces`: lưu thông tin các tỉnh/đài xổ số (id, name, code, region, drawing_days JSONB)
-
-Đảm bảo schema có:
-- Khóa ngoại hợp lý giữa các bảng
-- Indexes cho các trường thường được query
-- Constraints phù hợp cho dữ liệu
-- Cấu trúc linh hoạt để lưu trữ tất cả các loại cược
-
-Hãy sử dụng JSON object đã phân tích để tạo INSERT statements cho bảng rules, đảm bảo có đầy đủ các loại cược chính.
-
-Tạo thêm INSERT statements để nhập dữ liệu các tỉnh/đài xổ số từ danh_sach_tinh_theo_ngay.json vào bảng provinces.
-
-Cung cấp thêm đoạn code khởi tạo Supabase client trong Next.js (cả client-side và server-side).
+Đảm bảo code tương thích với schema đã phân tích, đặc biệt là cấu trúc provinces và lottery_schedules để hỗ trợ chọn đài xổ số theo ngày.
 ```
 
-### Task 3: UI Component cơ bản
+## TASK 3: UI COMPONENTS CƠ BẢN (CẬP NHẬT)
 
 ```
-Tôi đang xây dựng ứng dụng cá cược xổ số với các loại cược như sau:
+Bây giờ cần xây dựng UI components dựa trên schema và interfaces đã phân tích, đặc biệt chú ý đến các loại cược (Đầu Đuôi, Xỉu Chủ, Bao Lô, v.v.) và cấu trúc tỉnh/đài xổ số.
 
-[Dán tóm tắt ngắn gọn về các loại cược từ PROMPT ĐẶC BIỆT vào đây]
+Hãy cung cấp code đầy đủ cho các components cơ bản sau:
+1. components/ui/Button.tsx (với các variants: primary, secondary, outline, ghost)
+2. components/ui/Card.tsx (với header, content, footer)
+3. components/ui/Form.tsx (integrated với react-hook-form và zod)
+4. components/ui/Tabs.tsx (component tabs đơn giản)
+5. components/ui/Select.tsx (dropdown selection)
+6. components/ui/Input.tsx (text, number với validation)
+7. components/ui/Table.tsx (hiển thị dữ liệu dạng bảng)
+8. components/ui/DataTable.tsx (table nâng cao với sorting, filtering)
+9. components/ui/Badge.tsx (hiển thị trạng thái: pending, won, lost)
+10. components/lottery/NumberGrid.tsx (grid hiển thị số 00-99 để chọn)
+11. components/lottery/ProvinceSelector.tsx (chọn tỉnh theo ngày dựa vào bảng lottery_schedules)
+12. components/lottery/RegionSelector.tsx (chọn M1/M2)
+13. components/lottery/BetStatusBadge.tsx (hiển thị trạng thái cược)
 
-Tôi cần xây dựng nhanh một số UI components cơ bản phù hợp với chủ đề cá cược xổ số. Hãy cung cấp code đầy đủ cho:
-
-1. components/ui/Button.tsx (các variants: primary, secondary, outline, ghost)
-2. components/ui/Input.tsx (text, number với validation)
-3. components/ui/Select.tsx (dropdown selection)
-4. components/ui/Card.tsx (card container đơn giản)
-5. components/ui/Tabs.tsx (tab navigation)
-6. components/ui/Form.tsx (form wrapper với validation)
-7. components/ui/Table.tsx (table hiển thị dữ liệu)
-8. components/ui/Badge.tsx (hiển thị trạng thái cược: pending, won, lost)
-9. components/ui/NumberGrid.tsx (grid hiển thị các số 00-99 để chọn)
-10. components/ui/DatePicker.tsx (chọn ngày xổ)
-11. components/ui/ProvinceSelector.tsx (chọn tỉnh/đài xổ số theo ngày)
-12. lib/utils.ts (utility functions, bao gồm cn/clsx để combine class names)
-
-Sử dụng Tailwind CSS với màu sắc phù hợp cho ứng dụng cá cược xổ số (tông màu xanh dương/đỏ/vàng).
-Đảm bảo components đơn giản, đẹp và dễ sử dụng. Chỉ cần đủ để demo, không cần quá phức tạp.
+Đảm bảo các components này được styled bằng Tailwind CSS và có đầy đủ TypeScript type definitions.
+Tham khảo logic nghiệp vụ đã được phân tích để thiết kế UI phù hợp với các loại cược và cách tính tiền.
 ```
 
-### Task 4: Admin Panel - Quản lý luật chơi và đài xổ số
+## TASK 4: ADMIN PANEL - QUẢN LÝ LUẬT CHƠI (CẬP NHẬT)
 
 ```
-Dựa trên phân tích chi tiết về luật chơi xổ số và thông tin các đài xổ số sau:
+Từ phân tích đã có về luật chơi và schema database, giờ tôi cần xây dựng Admin Panel để quản lý quy tắc cược và đài xổ số.
 
-[Dán TypeScript interfaces và phần tóm tắt về các loại cược từ PROMPT ĐẶC BIỆT vào đây]
-[Dán phần phân tích về cấu trúc dữ liệu các đài xổ số theo ngày vào đây]
+Trong phần schema, chúng ta đã có:
+- Bảng rules để quản lý luật chơi với các trường như rule_code, bet_type, region, rate, variants (JSONB)
+- Bảng provinces và lottery_schedules để quản lý đài xổ số và lịch
 
-Tôi cần xây dựng trang admin quản lý luật chơi xổ số và đài xổ số. Hãy cung cấp code đầy đủ cho:
+Hãy cung cấp code đầy đủ cho:
+1. app/admin/page.tsx (trang admin dashboard)
+2. app/admin/bet-types/page.tsx (trang quản lý luật chơi)
+3. app/admin/bet-types/components/BetTypeEditor.tsx (form chỉnh sửa luật chơi)
+4. app/admin/bet-types/components/PayRateEditor.tsx (điều chỉnh tỷ lệ thưởng)
+5. lib/validators/bet-type-form.ts (Zod schema cho form)
+6. lib/actions/bet-types.ts (Server Actions cho CRUD luật chơi)
 
-1. app/admin/rules/page.tsx (trang liệt kê tất cả luật chơi)
-2. app/admin/rules/new/page.tsx (trang tạo luật chơi mới)
-3. app/admin/rules/[id]/page.tsx (trang chỉnh sửa luật chơi)
-4. app/admin/provinces/page.tsx (trang quản lý đài xổ số)
-5. app/admin/provinces/[id]/page.tsx (trang chỉnh sửa thông tin đài)
-6. components/admin/RuleForm.tsx (form tạo/sửa luật chơi)
-7. components/admin/RulesTable.tsx (bảng hiển thị luật chơi)
-8. components/admin/ProvinceForm.tsx (form tạo/sửa đài xổ số)
-9. components/admin/ProvincesTable.tsx (bảng hiển thị đài xổ số)
-10. lib/actions/rules.ts (server actions cho CRUD rules)
-11. lib/actions/provinces.ts (server actions cho CRUD provinces)
-12. lib/validators/ruleSchema.ts (Zod validation schema cho rules)
-13. lib/validators/provinceSchema.ts (Zod validation schema cho provinces)
+Trang quản lý luật chơi cần cho phép:
+- Xem danh sách các luật chơi hiện tại
+- Thêm/sửa/xóa luật chơi
+- Điều chỉnh tỷ lệ thưởng
+- Kích hoạt/vô hiệu hóa luật chơi
+- Quản lý biến thể (variants) của luật chơi
 
-Form quản lý luật chơi cần có các field:
-- Tên luật chơi
-- Mã luật chơi (rule_code)
-- Loại cược (dropdown với tất cả loại cược đã phân tích)
-- Khu vực áp dụng (M1, M2, ALL)
-- Tỷ lệ thắng (rate)
-- Mô tả luật chơi
-- Trạng thái (active/inactive)
-- Công thức tính tiền cược (stake_formula)
-- Biến thể (variants) - có thể thêm nhiều biến thể
-
-Form quản lý đài xổ số cần có các field:
-- Tên tỉnh/đài
-- Mã đài (code)
-- Khu vực (M1, M2)
-- Các ngày quay thưởng trong tuần
-
-Sử dụng Server Components và Server Actions của Next.js 15 để tương tác với Supabase.
+Tận dụng các interfaces và schema đã được phân tích để thiết kế form phù hợp.
 ```
 
-## NGÀY 2: FORM BUILDER & ĐỐI SOÁT KẾT QUẢ
-
-### Task 5: Form Builder đặt cược với chọn đài
+## TASK 5: FORM BUILDER ĐẶT CƯỢC (CẬP NHẬT)
 
 ```
-Dựa trên phân tích chi tiết về luật chơi xổ số, logic tính tiền cược và thông tin các đài xổ số sau:
+Dựa trên schema database và logic đặt cược đã phân tích, giờ tôi cần xây dựng form đặt cược động cho người dùng.
 
-[Dán TypeScript interfaces và utility functions cho việc tính toán tiền cược từ PROMPT ĐẶC BIỆT vào đây]
-[Dán phần phân tích về cấu trúc dữ liệu các đài xổ số theo ngày vào đây]
+Chúng ta đã có:
+- Schema bets với các trường cần thiết
+- Logic tính toán tiền cược và tiềm năng thắng
+- Cấu trúc provinces và lottery_schedules cho chọn đài
 
-Tôi cần xây dựng form builder động cho người dùng đặt cược, có khả năng chọn đài xổ số cụ thể. Hãy cung cấp code đầy đủ cho:
+Hãy cung cấp code đầy đủ cho:
+1. app/bet/page.tsx (trang đặt cược chính)
+2. app/bet/components/BetForm.tsx (form đặt cược chính)
+3. app/bet/components/BetTypeSelector.tsx (chọn loại cược)
+4. app/bet/components/RegionSelector.tsx (chọn miền M1/M2)
+5. app/bet/components/NumbersInput.tsx (nhập số cược)
+6. app/bet/components/AmountCalculator.tsx (tính toán tiền cược và tiềm năng thắng)
+7. lib/validators/bet-form.ts (validation schema)
+8. lib/lottery/calculators.ts (tính toán tiền cược dựa trên các quy tắc)
+9. lib/lottery/number-generators.ts (sinh số theo các phương pháp: con giáp, đảo số, tài xỉu)
+10. lib/actions/bets.ts (Server Actions lưu thông tin cược)
 
-1. lib/context/BetFormContext.tsx (context provider quản lý state của form)
-2. lib/hooks/useBetForm.ts (custom hook cho việc quản lý form)
-3. lib/hooks/useProvinces.ts (custom hook lấy dữ liệu đài xổ số theo ngày)
-4. lib/utils/betCalculator.ts (utility tính toán tiền cược và tiềm năng thắng)
-5. app/bets/new/page.tsx (trang đặt cược mới)
-6. components/betting/BetForm.tsx (form đặt cược chính)
-7. components/betting/BetTypeSelector.tsx (component chọn loại cược)
-8. components/betting/RegionSelector.tsx (component chọn khu vực M1, M2)
-9. components/betting/ProvinceSelector.tsx (component chọn đài xổ số cụ thể)
-10. components/betting/DrawDatePicker.tsx (component chọn ngày xổ)
-11. components/betting/NumberSelection/index.tsx (component quản lý chọn số)
-12. components/betting/NumberSelection/DirectInput.tsx (nhập số trực tiếp)
-13. components/betting/NumberSelection/NumberGrid.tsx (chọn từ bảng số)
-14. components/betting/NumberSelection/ZodiacSelection.tsx (chọn theo 12 con giáp)
-15. components/betting/AmountInput.tsx (component nhập số tiền)
-16. components/betting/BetSummary.tsx (hiển thị tóm tắt cược)
-17. lib/actions/bets.ts (server action tạo cược mới)
+Form cần có khả năng:
+- Chọn miền (M1/M2) và đài xổ số theo ngày
+- Chọn loại cược (Đầu Đuôi, Xỉu Chủ, Bao Lô, v.v.)
+- Chọn số cược với nhiều cách chọn: nhập trực tiếp, chọn từ bảng, theo con giáp, đảo số
+- Tính toán tự động tổng tiền đặt và tiềm năng thắng theo logic đã phân tích
+- Tạo mã cược duy nhất và lưu vào database
 
-Tập trung vào 3 loại form cược quan trọng nhất:
-1. Form cho Đầu Đuôi (components/betting/types/DauDuoiBetForm.tsx)
-2. Form cho Bao Lô 2/3/4 (components/betting/types/BaoLoBetForm.tsx)
-3. Form cho Đá (components/betting/types/DaBetForm.tsx)
-
-Form cần có các tính năng:
-- Chọn đài xổ số cụ thể dựa trên ngày quay thưởng
-- Thay đổi động dựa trên loại cược được chọn
-- Validation cho số cược theo từng loại
-- Tính toán tự động tổng tiền đóng và tiềm năng thắng
-- UI thân thiện và responsive
+Tận dụng các utility functions và interfaces đã có trong phân tích.
 ```
 
-### Task 6: Trang in phiếu cược sau khi đặt cược thành công
+## TASK 6: ĐỐI SOÁT KẾT QUẢ (CẬP NHẬT)
 
 ```
-Dựa trên phân tích về luật chơi xổ số và các loại cược sau:
+Từ phân tích về logic đối soát kết quả và schema database, giờ tôi cần xây dựng tính năng đối soát kết quả xổ số.
 
-[Dán tóm tắt ngắn gọn về cách tính tiền đóng và tiềm năng thắng từ PROMPT ĐẶC BIỆT vào đây]
+Chúng ta đã có:
+- Schema results để lưu kết quả xổ số
+- Logic đối soát chi tiết cho từng loại cược
+- Cấu trúc dữ liệu winning_numbers
 
-Tôi cần tạo trang in phiếu cược sau khi user đặt cược thành công. Phiếu cần hiển thị thông tin đài xổ số cụ thể. Hãy cung cấp code đầy đủ cho:
+Hãy cung cấp code đầy đủ cho:
+1. app/verification/page.tsx (trang đối soát kết quả)
+2. app/verification/components/BetVerifier.tsx (component xử lý đối soát cược)
+3. app/verification/components/ResultsInput.tsx (form nhập kết quả xổ số)
+4. lib/validators/result-form.ts (validation schema cho kết quả)
+5. lib/lottery/result-verifier.ts (logic đối soát cược với kết quả)
+6. lib/actions/results.ts (Server Actions quản lý kết quả xổ số)
+7. lib/actions/verify-bets.ts (Server Actions xử lý đối soát cược)
 
-1. app/bets/[id]/print/page.tsx (trang in phiếu)
-2. components/betting/BetTicket.tsx (component hiển thị thông tin phiếu cược)
-3. components/betting/QRCode.tsx (component tạo QR code chứa thông tin cược)
-4. lib/utils/printUtils.ts (utility functions cho việc in ấn)
-5. app/bets/[id]/print/print.css (CSS styles cho việc in phiếu)
+Tính năng đối soát cần:
+- Cho phép nhập kết quả xổ số theo từng đài
+- Thực hiện đối soát tự động với các cược đã đặt
+- Cập nhật trạng thái cược (WON/LOST) dựa trên kết quả
+- Tính toán tiền thắng dựa trên quy tắc đã phân tích
+- Hiển thị chi tiết kết quả đối soát
 
-Phiếu cược cần có:
-- Mã cược duy nhất (bet_code)
-- QR code chứa mã cược
-- Thông tin đài xổ số đã chọn (tỉnh, ngày xổ)
-- Thông tin chi tiết về loại cược, số tiền, số cược
-- Ngày giờ đặt cược và ngày xổ
-- Chi tiết cách tính tiền đóng (dựa trên loại cược)
-- Thông tin tiềm năng thắng (tỷ lệ thắng × số tiền cược)
-- Nút in trực tiếp
-- Style phù hợp cho cả hiển thị trên màn hình và khi in ra giấy
-
-Trang này cần hiển thị chính xác thông tin theo từng loại cược, đặc biệt là cách tính tiền đóng dựa trên logic đã phân tích.
+Cần sử dụng logic đối soát đã được phân tích chi tiết trong prompt đặc biệt.
 ```
 
-### Task 7: Đối soát kết quả thủ công
+## TASK 7: TRANG DASHBOARD & BÁO CÁO (CẬP NHẬT)
 
 ```
-Dựa trên phân tích chi tiết về luật chơi xổ số, logic đối soát và thông tin các đài xổ số sau:
+Dựa trên schema database và logic đã phân tích, tôi cần xây dựng dashboard hiển thị thông tin cược và kết quả.
 
-[Dán phần giải thích về logic đối soát từ PROMPT ĐẶC BIỆT vào đây]
-[Dán phần phân tích về cấu trúc dữ liệu các đài xổ số theo ngày vào đây]
-
-Tôi cần xây dựng tính năng đối soát kết quả xổ số thủ công. Tôi đã có sẵn code crawler kết quả xổ số dạng file Node.js. Hãy cung cấp code đầy đủ cho:
-
-1. app/admin/results/page.tsx (trang quản lý kết quả và đối soát)
-2. app/admin/results/new/page.tsx (trang nhập kết quả xổ số mới)
-3. components/admin/ResultForm.tsx (form nhập kết quả xổ số theo đài)
-4. components/admin/ResultUploader.tsx (component upload file kết quả đã crawl)
-5. components/admin/ProcessResultsButton.tsx (nút trigger đối soát thủ công)
-6. components/admin/ResultsTable.tsx (bảng hiển thị kết quả đã xử lý)
-7. components/admin/MatchedBetsTable.tsx (bảng hiển thị cược thắng)
-8. lib/actions/results.ts (server actions cho xử lý kết quả)
-9. lib/actions/process-bets.ts (server actions cho xử lý đối soát cược)
-10. lib/matchers/index.ts (utility chứa các matcher functions)
-11. lib/matchers/dauDuoiMatcher.ts (matcher cho đầu đuôi)
-12. lib/matchers/baoLoMatcher.ts (matcher cho bao lô)
-13. lib/matchers/daMatcher.ts (matcher cho đá)
-
-Logic đối soát cần tích hợp với thông tin đài xổ số:
-- Kiểm tra đài xổ số cụ thể mà user đã đặt cược
-- Kiểm tra từng loại cược theo đúng quy tắc đã phân tích
-- Cập nhật trạng thái các cược và tính tiền thắng
-- Hiển thị kết quả đối soát theo từng đài
-
-Tập trung vào việc hiển thị rõ ràng cách đối soát để demo cho khách hàng hiểu quy trình.
-```
-
-### Task 8: Trang Dashboard hiển thị kết quả
-
-```
-Dựa trên phân tích về luật chơi xổ số, các loại cược và thông tin các đài xổ số sau:
-
-[Dán tóm tắt ngắn gọn về các loại cược từ PROMPT ĐẶC BIỆT vào đây]
-[Dán phần phân tích về cấu trúc dữ liệu các đài xổ số theo ngày vào đây]
-
-Tôi cần tạo trang dashboard đơn giản để hiển thị kết quả cược và thống kê cơ bản. Hãy cung cấp code đầy đủ cho:
-
+Hãy cung cấp code đầy đủ cho:
 1. app/dashboard/page.tsx (trang dashboard chính)
-2. components/dashboard/BetSummary.tsx (tóm tắt cược)
-3. components/dashboard/RecentResults.tsx (kết quả xổ số gần đây theo đài)
-4. components/dashboard/WinningBets.tsx (danh sách cược thắng)
-5. components/dashboard/BetTypeDistribution.tsx (biểu đồ phân bố theo loại cược)
-6. components/dashboard/ProvinceDistribution.tsx (biểu đồ phân bố theo đài xổ số)
-7. lib/actions/dashboard.ts (server actions lấy dữ liệu cho dashboard)
+2. app/dashboard/components/BetStatistics.tsx (thống kê cược)
+3. app/dashboard/components/WinningBets.tsx (danh sách cược thắng)
+4. app/dashboard/components/ResultHistory.tsx (lịch sử kết quả theo đài)
+5. app/dashboard/components/DistributionChart.tsx (biểu đồ phân bố cược)
+6. lib/actions/statistics.ts (Server Actions lấy dữ liệu thống kê)
 
-Trang dashboard cần hiển thị thông tin theo từng loại cược và đài xổ số:
-- Tổng số cược đặt theo từng loại và từng đài
-- Tỷ lệ thắng/thua theo từng loại và từng đài
-- Kết quả xổ số gần nhất với các giải quan trọng
-- Danh sách cược thắng với thông tin cách thắng (khớp với giải nào)
+Dashboard cần hiển thị:
+- Thống kê tổng số cược theo loại và trạng thái
+- Phân bố cược theo đài xổ số
+- Danh sách cược gần đây với kết quả đối soát
+- Lịch sử kết quả xổ số theo đài
+- Biểu đồ tỷ lệ thắng/thua theo loại cược
 
-Giao diện cần trực quan, dễ hiểu cho khách hàng, với biểu đồ hoặc bảng tóm tắt rõ ràng.
+Sử dụng Recharts hoặc thư viện biểu đồ phù hợp để hiển thị dữ liệu trực quan.
 ```
 
-## THỨ TỰ ƯU TIÊN VÀ LIÊN KẾT
-
-### Thứ tự ưu tiên nếu thời gian bị giới hạn
-
-1. Form Builder đặt cược với chọn đài (tập trung vào Đầu Đuôi, Bao Lô)
-2. Admin Panel quản lý luật chơi và đài xổ số
-3. Đối soát kết quả cơ bản theo đài
-4. Trang in phiếu và Dashboard
-
-### Hướng dẫn liên kết giữa các task
+## TASK 8: IN PHIẾU & EXPORT DỮ LIỆU (CẬP NHẬT)
 
 ```
-Lưu ý cho tất cả các prompt:
-- Luôn tham chiếu đến interfaces và schema từ Prompt đặc biệt và Task 2
-- Tái sử dụng UI components từ Task 3
-- Đảm bảo nhất quán về naming convention và cấu trúc dữ liệu
-- Khi làm task sau, hãy xem xét output của task trước để đảm bảo tính liên tục
-- Mỗi phần code phải có comment đầy đủ và rõ ràng
-- Đảm bảo code có thể chạy được ngay khi copy/paste
-- Cần tích hợp thông tin đài xổ số vào mỗi chức năng
+Từ schema database và logic đã phân tích, tôi cần xây dựng tính năng in phiếu cược và export dữ liệu.
+
+Hãy cung cấp code đầy đủ cho:
+1. app/bet/[id]/print/page.tsx (trang in phiếu cược)
+2. app/bet/[id]/print/components/BetTicket.tsx (component hiển thị phiếu cược)
+3. app/admin/exports/page.tsx (trang export dữ liệu cược)
+4. lib/utils/print-utils.ts (utilities cho việc in ấn)
+5. lib/utils/export-utils.ts (utilities cho việc export data)
+6. lib/actions/exports.ts (Server Actions cho export)
+
+Tính năng in phiếu cần:
+- Hiển thị thông tin cược đầy đủ, bao gồm đài xổ số, số cược, mệnh giá
+- Hiển thị mã cược và QR code để kiểm tra
+- Có thể in trực tiếp từ trình duyệt
+- Có style phù hợp cho việc in ấn
+
+Tính năng export dữ liệu cần:
+- Cho phép export danh sách cược theo ngày, đài xổ số, trạng thái
+- Export kết quả đối soát chi tiết
+- Hỗ trợ format CSV và Excel
 ```
 
-### Các ví dụ dữ liệu cần chuẩn bị
+## CẬP NHẬT THỨ TỰ ƯU TIÊN
 
-1. Ví dụ kết quả xổ số M1 (Miền Nam/Trung) cho từng đài cụ thể
-2. Ví dụ kết quả xổ số M2 (Miền Bắc) cho từng đài cụ thể
-3. Ví dụ các phiếu cược với các loại cược khác nhau cho từng đài cụ thể
-4. Ví dụ kết quả đối soát cho từng đài
+1. **Task 1-2**: Setup dự án và Database ⭐⭐⭐⭐⭐
+2. **Task 3-4**: UI Components và Admin Panel ⭐⭐⭐⭐
+3. **Task 5**: Form Builder đặt cược ⭐⭐⭐⭐⭐
+4. **Task 6**: Đối soát kết quả ⭐⭐⭐⭐
+5. **Task 7-8**: Dashboard và In phiếu ⭐⭐⭐
 
-## LƯU Ý QUAN TRỌNG
+## LƯU Ý ĐẶC BIỆT
 
-1. **Sử dụng dữ liệu đài theo ngày**: Tất cả các form cần tích hợp chọn đài xổ số theo ngày
-2. **Cache thông tin đài**: Sử dụng React Context hoặc Server Components để tải thông tin đài tối ưu
-3. **Đảm bảo validation**: Kiểm tra loại cược có phù hợp với đài đã chọn không
-4. **Tính năng chính**: Form Builder với chọn đài, Quản lý luật chơi và đài, Đối soát kết quả
-5. **Test data**: Chuẩn bị dữ liệu mẫu cho từng đài
+1. **Xây dựng dần dần**: Mỗi task sẽ xây dựng trên output của task trước đó
+2. **Schema database**: Đã có đầy đủ và chi tiết, sử dụng làm nền tảng cho tất cả các task
+3. **TypeScript interfaces**: Đảm bảo sử dụng nhất quán các interfaces đã định nghĩa
+4. **Logic nghiệp vụ**: Tập trung vào triển khai đúng logic đặt cược và đối soát kết quả theo phân tích
+5. **Tính năng đài xổ số**: Cần tích hợp đúng cấu trúc provinces và lottery_schedules đã thiết kế
 
----
-
-Khi bạn gặp vấn đề khi follow theo các prompt, hãy điều chỉnh prompt và thêm thông tin chi tiết hơn để Chat Bot hiểu rõ hơn về vấn đề của bạn. Đặc biệt khi làm việc với dữ liệu đài xổ số và các logic phức tạp như đối soát kết quả cược Đá hoặc Xiên.
+Với những cập nhật này, kế hoạch prompt sẽ đảm bảo xây dựng ứng dụng nhất quán dựa trên phân tích và schema đã có.
