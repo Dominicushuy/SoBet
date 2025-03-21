@@ -1,5 +1,6 @@
-// app/admin/page.tsx
 'use client';
+
+import Link from 'next/link';
 
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -13,10 +14,16 @@ export default function AdminPage() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader>
-              <CardTitle>Quản lý Người Dùng</CardTitle>
+              <CardTitle>Quản lý Loại Cược</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Quản lý tài khoản và phân quyền người dùng trên hệ thống</p>
+              <p>Thêm, sửa, xóa và quản lý các loại cược và tỷ lệ thưởng</p>
+              <Link
+                href="/admin/bet-types"
+                className="mt-4 block rounded-md bg-lottery-primary px-4 py-2 text-center text-white hover:bg-lottery-primary/90"
+              >
+                Quản lý Loại Cược
+              </Link>
             </CardContent>
           </Card>
 
@@ -26,6 +33,12 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               <p>Cập nhật và quản lý kết quả xổ số các đài</p>
+              <Link
+                href="/verification"
+                className="mt-4 block rounded-md bg-lottery-primary px-4 py-2 text-center text-white hover:bg-lottery-primary/90"
+              >
+                Quản lý Kết Quả
+              </Link>
             </CardContent>
           </Card>
 
@@ -35,6 +48,45 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               <p>Xem thống kê tình hình đặt cược trên hệ thống</p>
+              <span className="mt-4 block rounded-md bg-gray-200 px-4 py-2 text-center text-gray-600 cursor-not-allowed">
+                Đang phát triển
+              </span>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Quản lý Đài</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Quản lý các đài xổ số và lịch xổ</p>
+              <span className="mt-4 block rounded-md bg-gray-200 px-4 py-2 text-center text-gray-600 cursor-not-allowed">
+                Đang phát triển
+              </span>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Quản lý Người Dùng</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Xem và quản lý người dùng, phân quyền</p>
+              <span className="mt-4 block rounded-md bg-gray-200 px-4 py-2 text-center text-gray-600 cursor-not-allowed">
+                Đang phát triển
+              </span>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Cài Đặt Hệ Thống</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Thiết lập và cấu hình hệ thống cá cược</p>
+              <span className="mt-4 block rounded-md bg-gray-200 px-4 py-2 text-center text-gray-600 cursor-not-allowed">
+                Đang phát triển
+              </span>
             </CardContent>
           </Card>
         </div>
