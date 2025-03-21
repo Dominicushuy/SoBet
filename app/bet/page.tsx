@@ -1,26 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm, type Resolver } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
-import { createNewBet } from '@/app/actions/bet-actions';
 import BetForm from '@/app/bet/components/BetForm';
+import SuccessDialog from '@/app/bet/components/SuccessDialog';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { createNewBet } from '@/lib/actions/bets';
 import { betFormSchema } from '@/lib/validators/bet-form';
+import { useAuth } from '@/providers/AuthProvider';
 import { BetFormData } from '@/types/bet';
 
 export default function BetPage() {
   const router = useRouter();
+  const { user, isAuthenticated, balance } = useAuth();
   const searchParams = useSearchParams();
   const [formStatus, setFormStatus] = useState<{
     isLoading: boolean;
     isSuccess: boolean;
     isError: boolean;
     message: string;
+    betCode?: string;
+    insufficientFunds?: boolean;
+    requiredAmount?: number;
+    loginRequired?: boolean;
   }>({
     isLoading: false,
     isSuccess: false,
@@ -28,25 +37,49 @@ export default function BetPage() {
     message: '',
   });
 
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+
+  // Check if user is authenticated
+  useEffect(() => {
+    if (!isAuthenticated && !formStatus.isLoading) {
+      // Save current URL for redirect after login
+      const currentUrl = window.location.pathname + window.location.search;
+      router.push(`/login?redirectTo=${encodeURIComponent(currentUrl)}`);
+    }
+  }, [isAuthenticated, router, formStatus.isLoading]);
+
   // Get any pre-selected options from URL params
   const preSelectedRegion = searchParams.get('region') || '';
   const preSelectedType = searchParams.get('type') || '';
 
   // Initialize form with react-hook-form and zod validation
   const form = useForm<BetFormData>({
-    resolver: zodResolver(betFormSchema) as unknown as Resolver<BetFormData>,
+    resolver: zodResolver(betFormSchema),
     defaultValues: {
-      region: preSelectedRegion as 'M1' | 'M2' | '',
-      bet_type: preSelectedType,
+      region: (preSelectedRegion as 'M1' | 'M2' | '') || '',
+      bet_type: preSelectedType || '',
       selection_method: 'direct',
       numbers: [],
       amount: 10000, // Default amount in VND
       draw_date: new Date().toISOString().split('T')[0], // Today's date
+      province: '',
+      subtype: '',
     },
   });
 
   const handleSubmit = async (data: BetFormData) => {
     try {
+      if (!isAuthenticated) {
+        setFormStatus({
+          isLoading: false,
+          isSuccess: false,
+          isError: true,
+          message: 'Bạn cần đăng nhập để đặt cược',
+          loginRequired: true,
+        });
+        return;
+      }
+
       setFormStatus({
         isLoading: true,
         isSuccess: false,
@@ -63,6 +96,9 @@ export default function BetPage() {
           isSuccess: false,
           isError: true,
           message: result.error,
+          insufficientFunds: result.insufficientFunds,
+          requiredAmount: result.requiredAmount,
+          loginRequired: result.loginRequired,
         });
         return;
       }
@@ -73,12 +109,11 @@ export default function BetPage() {
         isSuccess: true,
         isError: false,
         message: 'Đặt cược thành công!',
+        betCode: result.betCode,
       });
 
-      // Reset form or redirect
-      setTimeout(() => {
-        router.push('/account/bets');
-      }, 2000);
+      // Show success dialog
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error('Error placing bet:', error);
       setFormStatus({
@@ -90,17 +125,72 @@ export default function BetPage() {
     }
   };
 
+  // Handle closing the success dialog
+  const handleSuccessDialogClose = () => {
+    setShowSuccessDialog(false);
+
+    // Reset the form
+    form.reset({
+      region: '',
+      bet_type: '',
+      selection_method: 'direct',
+      numbers: [],
+      amount: 10000,
+      draw_date: new Date().toISOString().split('T')[0],
+      province: '',
+      subtype: '',
+    });
+  };
+
+  // Handle view bet details after success
+  const handleViewBet = () => {
+    setShowSuccessDialog(false);
+    if (formStatus.betCode) {
+      router.push(`/account/bets?code=${formStatus.betCode}`);
+    } else {
+      router.push('/account/bets');
+    }
+  };
+
+  // Handle adding money when insufficient funds
+  const handleAddMoney = () => {
+    router.push('/account/wallet');
+  };
+
+  // If not authenticated, show login message
+  if (!isAuthenticated && !formStatus.isLoading) {
+    return null; // Will redirect to login via useEffect
+  }
+
   return (
     <div className="container mx-auto max-w-4xl">
       <h1 className="mb-6 text-3xl font-bold">Đặt Cược Xổ Số</h1>
 
       {formStatus.isError && (
         <Alert variant="destructive" className="mb-6">
-          <AlertDescription>{formStatus.message}</AlertDescription>
+          <AlertDescription>
+            {formStatus.message}
+            {formStatus.insufficientFunds && (
+              <div className="mt-2">
+                <Button size="sm" variant="outline" onClick={handleAddMoney}>
+                  Nạp tiền ngay
+                </Button>
+              </div>
+            )}
+            {formStatus.loginRequired && (
+              <div className="mt-2">
+                <Link href={`/login?redirectTo=${encodeURIComponent(window.location.pathname)}`}>
+                  <Button size="sm" variant="outline">
+                    Đăng nhập ngay
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </AlertDescription>
         </Alert>
       )}
 
-      {formStatus.isSuccess && (
+      {formStatus.isSuccess && !showSuccessDialog && (
         <Alert className="mb-6 bg-green-50 text-green-800 border-green-200">
           <AlertDescription>{formStatus.message}</AlertDescription>
         </Alert>
@@ -117,6 +207,16 @@ export default function BetPage() {
           <BetForm form={form} onSubmit={handleSubmit} isSubmitting={formStatus.isLoading} />
         </CardContent>
       </Card>
+
+      {/* Success Dialog */}
+      {showSuccessDialog && formStatus.betCode && (
+        <SuccessDialog
+          open={showSuccessDialog}
+          onClose={handleSuccessDialogClose}
+          betCode={formStatus.betCode}
+          onViewBet={handleViewBet}
+        />
+      )}
     </div>
   );
 }

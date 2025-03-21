@@ -11,8 +11,32 @@ export interface NumberSelectionMethod {
 
 export interface SelectionConfig {
   type: 'DIRECT' | 'ZODIAC' | 'PERMUTATION' | 'RANGE' | 'PATTERN' | 'HI_LO' | 'ODD_EVEN';
-  params?: any; // Tham số bổ sung đặc thù cho phương pháp
+  params?: ZodiacParams | HiLoParams | OddEvenParams | PermutationParams;
   generateFunction: string; // Tên hàm cần gọi
+}
+
+export interface ZodiacParams {
+  animals: ZodiacAnimal[];
+}
+
+export interface ZodiacAnimal {
+  code: string;
+  name: string;
+  value: number;
+  numbers: string[];
+}
+
+export interface HiLoParams {
+  hiRange: [number, number];
+  loRange: [number, number];
+}
+
+export interface OddEvenParams {
+  includeZero?: boolean;
+}
+
+export interface PermutationParams {
+  maxDigits: number;
 }
 
 // Ví dụ phương pháp chọn số theo 12 con giáp
@@ -27,7 +51,7 @@ export const zodiacSelectionMethod: NumberSelectionMethod = {
     params: {
       animals: [
         {
-          code: 'ty',
+          code: 'ti',
           name: 'Tý',
           value: 0,
           numbers: ['00', '12', '24', '36', '48', '60', '72', '84', '96'],
@@ -104,28 +128,37 @@ export const zodiacSelectionMethod: NumberSelectionMethod = {
   },
 };
 
+// Định nghĩa lookup object để tối ưu hiệu suất
+const zodiacNumbersMap: Record<string, string[]> = {
+  ti: ['00', '12', '24', '36', '48', '60', '72', '84', '96'],
+  suu: ['01', '13', '25', '37', '49', '61', '73', '85', '97'],
+  dan: ['02', '14', '26', '38', '50', '62', '74', '86', '98'],
+  mao: ['03', '15', '27', '39', '51', '63', '75', '87', '99'],
+  thin: ['04', '16', '28', '40', '52', '64', '76', '88'],
+  ty: ['05', '17', '29', '41', '53', '65', '77', '89'],
+  ngo: ['06', '18', '30', '42', '54', '66', '78', '90'],
+  mui: ['07', '19', '31', '43', '55', '67', '79', '91'],
+  than: ['08', '20', '32', '44', '56', '68', '80', '92'],
+  dau: ['09', '21', '33', '45', '57', '69', '81', '93'],
+  tuat: ['10', '22', '34', '46', '58', '70', '82', '94'],
+  hoi: ['11', '23', '35', '47', '59', '71', '83', '95'],
+};
+
 // Phương thức tạo số theo 12 con giáp
 export function generateZodiacNumbers(animalCode: string): string[] {
-  const zodiacMap: Record<string, string[]> = {
-    ti: ['00', '12', '24', '36', '48', '60', '72', '84', '96'],
-    suu: ['01', '13', '25', '37', '49', '61', '73', '85', '97'],
-    dan: ['02', '14', '26', '38', '50', '62', '74', '86', '98'],
-    mao: ['03', '15', '27', '39', '51', '63', '75', '87', '99'],
-    thin: ['04', '16', '28', '40', '52', '64', '76', '88'],
-    ty: ['05', '17', '29', '41', '53', '65', '77', '89'],
-    ngo: ['06', '18', '30', '42', '54', '66', '78', '90'],
-    mui: ['07', '19', '31', '43', '55', '67', '79', '91'],
-    than: ['08', '20', '32', '44', '56', '68', '80', '92'],
-    dau: ['09', '21', '33', '45', '57', '69', '81', '93'],
-    tuat: ['10', '22', '34', '46', '58', '70', '82', '94'],
-    hoi: ['11', '23', '35', '47', '59', '71', '83', '95'],
-  };
-
-  return zodiacMap[animalCode] || [];
+  return zodiacNumbersMap[animalCode] || [];
 }
+
+// Set để lưu trữ các permutation đã sinh sẵn, giúp cải thiện hiệu suất
+const permutationCache: Record<string, string[]> = {};
 
 // Phương thức tạo hoán vị của số
 export function generatePermutations(number: string): string[] {
+  // Nếu đã có trong cache thì lấy từ cache
+  if (permutationCache[number]) {
+    return permutationCache[number];
+  }
+
   const digits = number.split('');
   const results: string[] = [];
 
@@ -142,42 +175,85 @@ export function generatePermutations(number: string): string[] {
   }
 
   permute(digits);
-  return Array.from(new Set(results)); // Loại bỏ trùng lặp
+
+  // Loại bỏ trùng lặp và lưu vào cache
+  const uniqueResults = Array.from(new Set(results));
+  permutationCache[number] = uniqueResults;
+
+  return uniqueResults;
 }
 
 // Phương thức tạo số cao/thấp (tài/xỉu)
 export function generateHiLoNumbers(type: 'hi' | 'lo'): string[] {
-  const result: string[] = [];
+  // Pre-generate arrays to improve performance
+  const hiNumbers = Array.from({ length: 50 }, (_, i) => (i + 50).toString().padStart(2, '0'));
+  const loNumbers = Array.from({ length: 50 }, (_, i) => i.toString().padStart(2, '0'));
 
-  if (type === 'hi') {
-    // Tài (cao)
-    for (let i = 50; i <= 99; i++) {
-      result.push(i.toString().padStart(2, '0'));
-    }
-  } else {
-    // Xỉu (thấp)
-    for (let i = 0; i <= 49; i++) {
-      result.push(i.toString().padStart(2, '0'));
-    }
-  }
-
-  return result;
+  return type === 'hi' ? hiNumbers : loNumbers;
 }
 
 // Phương thức tạo số chẵn/lẻ
 export function generateOddEvenNumbers(type: 'odd' | 'even'): string[] {
-  const result: string[] = [];
+  // Pre-generate arrays to improve performance
+  const evenNumbers = Array.from({ length: 50 }, (_, i) => (i * 2).toString().padStart(2, '0'));
+  const oddNumbers = Array.from({ length: 50 }, (_, i) => (i * 2 + 1).toString().padStart(2, '0'));
 
-  for (let i = 0; i <= 99; i++) {
-    const numStr = i.toString().padStart(2, '0');
-    const isEven = i % 2 === 0;
+  return type === 'even' ? evenNumbers : oddNumbers;
+}
 
-    if ((type === 'even' && isEven) || (type === 'odd' && !isEven)) {
-      result.push(numStr);
-    }
+/**
+ * Tạo số theo kéo chục
+ * @param tensDigit Chữ số hàng chục (0-9)
+ */
+export function generateTensNumbers(tensDigit: number): string[] {
+  const results: string[] = [];
+
+  for (let i = 0; i <= 9; i++) {
+    results.push(`${tensDigit}${i}`);
   }
 
-  return result;
+  return results;
+}
+
+/**
+ * Tạo số theo kéo đơn vị
+ * @param unitsDigit Chữ số hàng đơn vị (0-9)
+ */
+export function generateUnitsNumbers(unitsDigit: number): string[] {
+  const results: string[] = [];
+
+  for (let i = 0; i <= 9; i++) {
+    results.push(`${i}${unitsDigit}`);
+  }
+
+  return results;
+}
+
+/**
+ * Tạo số đôi (số hai chữ số giống nhau)
+ */
+export function generateDoubleNumbers(): string[] {
+  return Array.from({ length: 10 }, (_, i) => `${i}${i}`);
+}
+
+/**
+ * Tạo số ba (số ba chữ số giống nhau)
+ */
+export function generateTripleNumbers(): string[] {
+  return Array.from({ length: 10 }, (_, i) => `${i}${i}${i}`);
+}
+
+/**
+ * Tạo số tiến (ba chữ số liên tiếp tăng dần)
+ */
+export function generateProgressiveNumbers(): string[] {
+  const results: string[] = [];
+
+  for (let i = 1; i <= 7; i++) {
+    results.push(`${i}${i + 1}${i + 2}`);
+  }
+
+  return results;
 }
 
 // Lấy tất cả các phương pháp chọn số

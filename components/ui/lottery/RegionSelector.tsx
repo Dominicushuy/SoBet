@@ -20,12 +20,14 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
       name: 'Miền Nam/Trung',
       description: 'Xổ số các tỉnh miền Nam và miền Trung',
       color: 'bg-lottery-m1',
+      details: '6 chữ số cho giải Đặc Biệt, 8-9 giải thưởng',
     },
     {
       id: 'M2',
       name: 'Miền Bắc',
       description: 'Xổ số các tỉnh miền Bắc',
       color: 'bg-lottery-m2',
+      details: '5 chữ số cho giải Đặc Biệt, 8 giải thưởng',
     },
   ];
 
@@ -60,6 +62,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
               <h3 className="text-lg font-medium">{region.name}</h3>
             </div>
             <p className="mt-2 text-sm text-gray-500">{region.description}</p>
+            <p className="mt-1 text-xs text-gray-400">{region.details}</p>
 
             {selectedRegion === region.id && (
               <div className="absolute top-2 right-2">
@@ -79,6 +82,11 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({
             )}
           </div>
         ))}
+      </div>
+
+      <div className="text-sm text-gray-500 bg-blue-50 border border-blue-200 rounded-md p-3">
+        <strong>Lưu ý:</strong> Các tỉnh xổ theo lịch cố định. Mỗi tỉnh chỉ xổ vào một ngày nhất
+        định trong tuần. Vui lòng kiểm tra lịch xổ số khi chọn tỉnh.
       </div>
     </div>
   );

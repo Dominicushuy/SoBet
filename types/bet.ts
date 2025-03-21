@@ -59,3 +59,29 @@ export interface BetVerificationResult {
   matchedPrizes: any[];
   totalWinAmount: number;
 }
+
+// Định nghĩa interface cho kết quả tính toán cược
+export interface BetCalculationResult {
+  numbers: string[];
+  unitStake: number;
+  unitCount: number;
+  multiplier: number;
+  totalStake: number;
+  potentialWin: number;
+  rewardRate: number;
+}
+
+// Định nghĩa interface cho Rule
+export interface Rule {
+  id: string;
+  name: string;
+  rule_code: string;
+  bet_type: string;
+  region: string;
+  digits?: number;
+  rate?: number;
+  stake_formula?: string;
+  variants?: any; // Thay bằng type cụ thể
+  win_logic?: any; // Thay bằng type cụ thể
+  active: boolean;
+}

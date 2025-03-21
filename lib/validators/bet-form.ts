@@ -12,18 +12,35 @@ export const betFormSchema = z.object({
     message: 'Vui lòng chọn loại cược',
   }),
   subtype: z.string().optional(),
-  selection_method: z.enum(['direct', 'zodiac', 'hiLo', 'oddEven', 'pattern']).default('direct'),
+  selection_method: z
+    .enum(['direct', 'zodiac', 'hiLo', 'oddEven', 'pattern', 'tens', 'special'])
+    .default('direct'),
   numbers: z.array(z.string()).min(1, {
     message: 'Vui lòng chọn ít nhất 1 số',
   }),
   amount: z.number().min(1000, {
     message: 'Mệnh giá tối thiểu là 1.000 VNĐ',
   }),
-  draw_date: z.string(),
+  draw_date: z.string().min(1, {
+    message: 'Vui lòng chọn ngày xổ',
+  }),
 });
 
 // Type inferred từ schema
 export type BetFormValues = z.infer<typeof betFormSchema>;
+
+// Schema cho kết quả tính toán cược
+export const betCalculationSchema = z.object({
+  numbers: z.array(z.string()),
+  unitStake: z.number(),
+  unitCount: z.number(),
+  multiplier: z.number(),
+  totalStake: z.number(),
+  potentialWin: z.number(),
+  rewardRate: z.number(),
+});
+
+export type BetCalculationValues = z.infer<typeof betCalculationSchema>;
 
 // Hàm helper kiểm tra validity của form
 export function validateBetForm(data: any): { isValid: boolean; errors: Record<string, string> } {
@@ -47,6 +64,7 @@ export function validateBetForm(data: any): { isValid: boolean; errors: Record<s
 export function validateBetAmount(
   amount: number,
   totalStake: number,
+  walletBalance: number,
   minAmount = 1000,
   maxAmount = 50000000
 ): { isValid: boolean; message?: string } {
@@ -61,6 +79,13 @@ export function validateBetAmount(
     return {
       isValid: false,
       message: `Tổng tiền cược tối đa là ${maxAmount.toLocaleString('vi-VN')} VNĐ`,
+    };
+  }
+
+  if (totalStake > walletBalance) {
+    return {
+      isValid: false,
+      message: `Số dư ví không đủ. Bạn cần nạp thêm ${(totalStake - walletBalance).toLocaleString('vi-VN')} VNĐ`,
     };
   }
 

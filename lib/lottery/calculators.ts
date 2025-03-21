@@ -91,12 +91,13 @@ export function calculateBetAmount(
       // Nếu không tìm thấy quy tắc, sử dụng giá trị mặc định từ db
       if (rule.stake_formula) {
         try {
-          // Thử đánh giá công thức nếu có
-          const formula = rule.stake_formula
-            .replace('region', `'${region}'`)
-            .replace('subtype', `'${subtype}'`);
-          // eslint-disable-next-line no-eval
-          multiplier = eval(formula);
+          // Thay thế eval bằng Function để an toàn hơn
+          const safeCalculate = new Function(
+            'region',
+            'subtype',
+            `return (${rule.stake_formula});`
+          );
+          multiplier = safeCalculate(region, subtype);
         } catch (error) {
           console.error('Error evaluating stake formula:', error);
           multiplier = 1;
@@ -269,11 +270,14 @@ export function isValidNumber(number: string, betType: string): boolean {
 /**
  * Tạo mã cược ngẫu nhiên
  */
-export function generateBetCode(): string {
+export function generateBetCode(prefix: string = ''): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < 8; i++) {
+  let result = prefix;
+  const randomPartLength = 8 - prefix.length;
+
+  for (let i = 0; i < randomPartLength; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
+
   return result;
 }
