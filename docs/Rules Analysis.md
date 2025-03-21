@@ -154,6 +154,431 @@ Dựa trên tài liệu, đây là tất cả các loại cược được hỗ 
 
 ## 3. Object JSON cho các loại cược
 
+```json
+{
+  "betTypes": [
+    {
+      "id": "dd",
+      "name": "Đầu Đuôi",
+      "description": "Cược dựa trên số ở giải 8 (M1)/giải 7 (M2) và 2 số cuối của giải Đặc Biệt",
+      "digits": 2,
+      "region": "both",
+      "subtypes": [
+        {
+          "id": "dd",
+          "name": "Đầu Đuôi",
+          "payRate": 75,
+          "betRateM1": 2,
+          "betRateM2": 5
+        },
+        {
+          "id": "dau",
+          "name": "Chỉ Đầu",
+          "payRate": 75,
+          "betRateM1": 1,
+          "betRateM2": 4
+        },
+        {
+          "id": "duoi",
+          "name": "Chỉ Đuôi",
+          "payRate": 75,
+          "betRateM1": 1,
+          "betRateM2": 1
+        }
+      ],
+      "winLogic": {
+        "M1": [
+          { "prize": "8", "match": "full" },
+          { "prize": "ĐB", "match": "last2" }
+        ],
+        "M2": [
+          { "prize": "7", "match": "full" },
+          { "prize": "ĐB", "match": "last2" }
+        ]
+      }
+    },
+    {
+      "id": "xc",
+      "name": "Xỉu Chủ",
+      "description": "Cược dựa trên số ở giải 7 (M1)/giải 6 (M2) và 3 số cuối của giải Đặc Biệt",
+      "digits": 3,
+      "region": "both",
+      "subtypes": [
+        {
+          "id": "xc",
+          "name": "Xỉu Chủ Toàn Phần",
+          "payRate": 650,
+          "betRateM1": 2,
+          "betRateM2": 4
+        },
+        {
+          "id": "dau",
+          "name": "Chỉ Đầu",
+          "payRate": 650,
+          "betRateM1": 1,
+          "betRateM2": 3
+        },
+        {
+          "id": "duoi",
+          "name": "Chỉ Đuôi",
+          "payRate": 650,
+          "betRateM1": 1,
+          "betRateM2": 1
+        }
+      ],
+      "winLogic": {
+        "M1": [
+          { "prize": "7", "match": "full" },
+          { "prize": "ĐB", "match": "last3" }
+        ],
+        "M2": [
+          { "prize": "6", "match": "full" },
+          { "prize": "ĐB", "match": "last3" }
+        ]
+      }
+    },
+    {
+      "id": "b2",
+      "name": "Bao Lô 2",
+      "description": "Cược khớp với 2 số cuối của bất kỳ lô nào trong các giải",
+      "digits": 2,
+      "region": "both",
+      "payRate": 75,
+      "betRateM1": 18,
+      "betRateM2": 27,
+      "winLogic": {
+        "M1": { "match": "last2", "prizes": ["ĐB", "1", "2", "3", "4", "5", "6", "7", "8"] },
+        "M2": { "match": "last2", "prizes": ["ĐB", "1", "2", "3", "4", "5", "6", "7"] }
+      }
+    },
+    {
+      "id": "b3",
+      "name": "Bao Lô 3",
+      "description": "Cược khớp với 3 số cuối của bất kỳ lô nào trong các giải",
+      "digits": 3,
+      "region": "both",
+      "payRate": 650,
+      "betRateM1": 17,
+      "betRateM2": 23,
+      "winLogic": {
+        "M1": { "match": "last3", "prizes": ["ĐB", "1", "2", "3", "4", "5", "6", "7"] },
+        "M2": { "match": "last3", "prizes": ["ĐB", "1", "2", "3", "4", "5", "6"] }
+      }
+    },
+    {
+      "id": "b4",
+      "name": "Bao Lô 4",
+      "description": "Cược khớp với 4 số cuối của bất kỳ lô nào trong các giải",
+      "digits": 4,
+      "region": "both",
+      "payRate": 5500,
+      "betRateM1": 16,
+      "betRateM2": 20,
+      "winLogic": {
+        "M1": { "match": "last4", "prizes": ["ĐB", "1", "2", "3", "4", "5", "6"] },
+        "M2": { "match": "last4", "prizes": ["ĐB", "1", "2", "3", "4", "5"] }
+      }
+    },
+    {
+      "id": "b7l",
+      "name": "Bao 7 Lô",
+      "description": "Cược khớp với số cuối của 7 lô cụ thể ở M1",
+      "digits": "2-4",
+      "region": "M1",
+      "betRate": 7,
+      "payRates": {
+        "2": 75,
+        "3": 650,
+        "4": 5500
+      },
+      "winLogic": {
+        "prizes": ["ĐB", "5", "6", "6", "6", "7", "8"],
+        "match": "variable"
+      }
+    },
+    {
+      "id": "b8l",
+      "name": "Bao 8 Lô",
+      "description": "Cược khớp với số cuối của 8 lô cụ thể ở M2",
+      "digits": "2-4",
+      "region": "M2",
+      "betRate": 8,
+      "payRates": {
+        "2": 75,
+        "3": 650,
+        "4": 5500
+      },
+      "winLogic": {
+        "prizes": ["ĐB", "3", "4", "5", "6", "6", "6", "7"],
+        "match": "variable"
+      }
+    },
+    {
+      "id": "nt",
+      "name": "Nhất To",
+      "description": "Cược khớp với 2 số cuối của giải Nhất",
+      "digits": 2,
+      "region": "M2",
+      "payRate": 75,
+      "betRate": 1,
+      "winLogic": {
+        "prize": "1",
+        "match": "last2"
+      }
+    },
+    {
+      "id": "x",
+      "name": "Xiên",
+      "description": "Cược khi tất cả các cặp số xuất hiện trong kết quả",
+      "digits": 2,
+      "region": "M2",
+      "betRate": 27,
+      "subtypes": [
+        {
+          "id": "x2",
+          "name": "Xiên 2",
+          "count": 2,
+          "payRate": 75
+        },
+        {
+          "id": "x3",
+          "name": "Xiên 3",
+          "count": 3,
+          "payRate": 40
+        },
+        {
+          "id": "x4",
+          "name": "Xiên 4",
+          "count": 4,
+          "payRate": 250
+        }
+      ],
+      "winLogic": {
+        "allNumbers": true,
+        "prizes": ["ĐB", "1", "2", "3", "4", "5", "6", "7"]
+      }
+    },
+    {
+      "id": "da",
+      "name": "Đá",
+      "description": "Cược dựa trên nhiều trường hợp trúng với 2-5 cặp số",
+      "digits": 2,
+      "region": "M1",
+      "subtypes": [
+        {
+          "id": "da2",
+          "name": "Đá 2",
+          "count": 2,
+          "betRate": 1,
+          "payRates": {
+            "2": 12.5
+          }
+        },
+        {
+          "id": "da3",
+          "name": "Đá 3",
+          "count": 3,
+          "betRate": 3,
+          "payRates": {
+            "all3": 37.5,
+            "3+1x3": 112.5,
+            "3+1x2": 75,
+            "2+1x2": 43.75,
+            "2": 25
+          }
+        },
+        {
+          "id": "da4",
+          "name": "Đá 4",
+          "count": 4,
+          "betRate": 6,
+          "payRates": {
+            "all4": 250,
+            "3+1x3": 750,
+            "3+1x2": 500,
+            "2+2x2": 150,
+            "2+1x2": 75
+          }
+        },
+        {
+          "id": "da5",
+          "name": "Đá 5",
+          "count": 5,
+          "betRate": 10,
+          "payRates": {
+            "all5": 1250,
+            "4+1x3": 3750,
+            "4+1x2": 2500,
+            "3+2x2": 750,
+            "3+1x2": 500
+          }
+        }
+      ],
+      "winLogic": {
+        "complex": true,
+        "prizes": ["ĐB", "1", "2", "3", "4", "5", "6", "7", "8"]
+      }
+    }
+  ],
+  "numberSelectionMethods": [
+    {
+      "id": "zodiac",
+      "name": "12 Con Giáp",
+      "description": "Tạo tự động các số dựa trên 12 con giáp",
+      "options": [
+        {
+          "id": "ty",
+          "name": "Tý",
+          "value": 0,
+          "numbers": ["00", "12", "24", "36", "48", "60", "72", "84", "96"]
+        },
+        {
+          "id": "suu",
+          "name": "Sửu",
+          "value": 1,
+          "numbers": ["01", "13", "25", "37", "49", "61", "73", "85", "97"]
+        },
+        {
+          "id": "dan",
+          "name": "Dần",
+          "value": 2,
+          "numbers": ["02", "14", "26", "38", "50", "62", "74", "86", "98"]
+        },
+        {
+          "id": "mao",
+          "name": "Mão",
+          "value": 3,
+          "numbers": ["03", "15", "27", "39", "51", "63", "75", "87", "99"]
+        },
+        {
+          "id": "thin",
+          "name": "Thìn",
+          "value": 4,
+          "numbers": ["04", "16", "28", "40", "52", "64", "76", "88"]
+        },
+        {
+          "id": "ty",
+          "name": "Tỵ",
+          "value": 5,
+          "numbers": ["05", "17", "29", "41", "53", "65", "77", "89"]
+        },
+        {
+          "id": "ngo",
+          "name": "Ngọ",
+          "value": 6,
+          "numbers": ["06", "18", "30", "42", "54", "66", "78", "90"]
+        },
+        {
+          "id": "mui",
+          "name": "Mùi",
+          "value": 7,
+          "numbers": ["07", "19", "31", "43", "55", "67", "79", "91"]
+        },
+        {
+          "id": "than",
+          "name": "Thân",
+          "value": 8,
+          "numbers": ["08", "20", "32", "44", "56", "68", "80", "92"]
+        },
+        {
+          "id": "dau",
+          "name": "Dậu",
+          "value": 9,
+          "numbers": ["09", "21", "33", "45", "57", "69", "81", "93"]
+        },
+        {
+          "id": "tuat",
+          "name": "Tuất",
+          "value": 10,
+          "numbers": ["10", "22", "34", "46", "58", "70", "82", "94"]
+        },
+        {
+          "id": "hoi",
+          "name": "Hợi",
+          "value": 11,
+          "numbers": ["11", "23", "35", "47", "59", "71", "83", "95"]
+        }
+      ]
+    },
+    {
+      "id": "reverseNumber",
+      "name": "Đảo Số",
+      "description": "Tạo tự động tất cả các hoán vị của một số",
+      "subtypes": [
+        { "id": "2digits", "name": "Đảo 2 số", "digits": 2, "maxPermutations": 2 },
+        { "id": "3digits", "name": "Đảo 3 số", "digits": 3, "maxPermutations": 6 },
+        { "id": "4digits", "name": "Đảo 4 số", "digits": 4, "maxPermutations": 24 }
+      ]
+    },
+    {
+      "id": "highLow",
+      "name": "Tài - Xỉu",
+      "description": "Đặt cược tự động cho các số Tài (50-99) hoặc Xỉu (00-49)",
+      "options": [
+        { "id": "high", "name": "Tài", "range": "50-99", "count": 50 },
+        { "id": "low", "name": "Xỉu", "range": "00-49", "count": 50 }
+      ]
+    },
+    {
+      "id": "oddEven",
+      "name": "Chẵn - Lẻ",
+      "description": "Đặt cược tự động cho các số Chẵn hoặc Lẻ",
+      "options": [
+        { "id": "even", "name": "Chẵn", "formula": "n % 2 == 0", "count": 50 },
+        { "id": "odd", "name": "Lẻ", "formula": "n % 2 == 1", "count": 50 }
+      ]
+    },
+    {
+      "id": "numberSequence",
+      "name": "Kéo Số",
+      "description": "Tạo số theo các quy luật đặc biệt",
+      "subtypes": [
+        {
+          "id": "tenths",
+          "name": "Kéo chục",
+          "description": "Tạo 10 số có cùng hàng chục",
+          "inputType": "digit",
+          "inputRange": "0-9",
+          "outputCount": 10
+        },
+        {
+          "id": "units",
+          "name": "Kéo đơn vị",
+          "description": "Tạo 10 số có cùng hàng đơn vị",
+          "inputType": "digit",
+          "inputRange": "0-9",
+          "outputCount": 10
+        },
+        {
+          "id": "doubles",
+          "name": "Kéo Xỉu Chủ nhị",
+          "description": "Tạo các số đôi (2 chữ số giống nhau)",
+          "fixed": true,
+          "numbers": ["11", "22", "33", "44", "55", "66", "77", "88", "99"],
+          "outputCount": 9
+        },
+        {
+          "id": "triples",
+          "name": "Kéo Xỉu Chủ tam",
+          "description": "Tạo các số ba (3 chữ số giống nhau)",
+          "fixed": true,
+          "numbers": ["111", "222", "333", "444", "555", "666", "777", "888", "999"],
+          "outputCount": 9
+        },
+        {
+          "id": "sequential",
+          "name": "Kéo xỉu lũy tiến",
+          "description": "Tạo các số có 3 chữ số liên tiếp tăng dần",
+          "fixed": true,
+          "numbers": ["123", "234", "345", "456", "567", "678", "789"],
+          "outputCount": 7
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## 4. Logic đối soát kết quả
 
 ### 4.1 Đầu Đuôi (dd)
@@ -220,168 +645,168 @@ Dựa trên tài liệu, đây là tất cả các loại cược được hỗ 
 ```typescript
 // Định nghĩa các interfaces cho betTypes
 interface Prize {
-  prize: string
-  match: string
+  prize: string;
+  match: string;
 }
 
 interface WinLogicSimple {
-  match: string
-  prizes: string[]
+  match: string;
+  prizes: string[];
 }
 
 interface WinLogicComplex {
-  complex: boolean
-  prizes: string[]
+  complex: boolean;
+  prizes: string[];
 }
 
 interface WinLogicVariable {
-  prizes: string[]
-  match: string
+  prizes: string[];
+  match: string;
 }
 
 interface WinLogicXien {
-  allNumbers: boolean
-  prizes: string[]
+  allNumbers: boolean;
+  prizes: string[];
 }
 
 interface BetSubtype {
-  id: string
-  name: string
-  payRate: number
-  betRateM1?: number
-  betRateM2?: number
-  count?: number
+  id: string;
+  name: string;
+  payRate: number;
+  betRateM1?: number;
+  betRateM2?: number;
+  count?: number;
 }
 
 interface DaSubtype extends BetSubtype {
-  betRate: number
+  betRate: number;
   payRates: {
-    [key: string]: number
-  }
+    [key: string]: number;
+  };
 }
 
 interface BetType {
-  id: string
-  name: string
-  description: string
-  digits: number | string
-  region: string
-  subtypes?: BetSubtype[] | DaSubtype[]
-  payRate?: number
-  betRateM1?: number
-  betRateM2?: number
-  betRate?: number
+  id: string;
+  name: string;
+  description: string;
+  digits: number | string;
+  region: string;
+  subtypes?: BetSubtype[] | DaSubtype[];
+  payRate?: number;
+  betRateM1?: number;
+  betRateM2?: number;
+  betRate?: number;
   payRates?: {
-    [key: string]: number
-  }
+    [key: string]: number;
+  };
   winLogic: {
-    M1?: Prize[] | WinLogicSimple
-    M2?: Prize[] | WinLogicSimple
-    prize?: string
-    match?: string
-    prizes?: string[]
-    allNumbers?: boolean
-    complex?: boolean
-    variable?: string
-  }
+    M1?: Prize[] | WinLogicSimple;
+    M2?: Prize[] | WinLogicSimple;
+    prize?: string;
+    match?: string;
+    prizes?: string[];
+    allNumbers?: boolean;
+    complex?: boolean;
+    variable?: string;
+  };
 }
 
 // Định nghĩa các interfaces cho numberSelectionMethods
 interface ZodiacOption {
-  id: string
-  name: string
-  value: number
-  numbers: string[]
+  id: string;
+  name: string;
+  value: number;
+  numbers: string[];
 }
 
 interface HighLowOption {
-  id: string
-  name: string
-  range: string
-  count: number
+  id: string;
+  name: string;
+  range: string;
+  count: number;
 }
 
 interface OddEvenOption {
-  id: string
-  name: string
-  formula: string
-  count: number
+  id: string;
+  name: string;
+  formula: string;
+  count: number;
 }
 
 interface ReverseNumberSubtype {
-  id: string
-  name: string
-  digits: number
-  maxPermutations: number
+  id: string;
+  name: string;
+  digits: number;
+  maxPermutations: number;
 }
 
 interface NumberSequenceSubtype {
-  id: string
-  name: string
-  description: string
-  inputType?: string
-  inputRange?: string
-  fixed?: boolean
-  numbers?: string[]
-  outputCount: number
+  id: string;
+  name: string;
+  description: string;
+  inputType?: string;
+  inputRange?: string;
+  fixed?: boolean;
+  numbers?: string[];
+  outputCount: number;
 }
 
 interface NumberSelectionMethod {
-  id: string
-  name: string
-  description: string
-  options?: ZodiacOption[] | HighLowOption[] | OddEvenOption[]
-  subtypes?: ReverseNumberSubtype[] | NumberSequenceSubtype[]
+  id: string;
+  name: string;
+  description: string;
+  options?: ZodiacOption[] | HighLowOption[] | OddEvenOption[];
+  subtypes?: ReverseNumberSubtype[] | NumberSequenceSubtype[];
 }
 
 // Interface cho form đặt cược
 interface BetFormData {
-  userId: string
-  username: string
-  betDate: Date
-  drawDate: Date
-  region: 'M1' | 'M2' | 'both'
-  province: string
-  betType: string
-  betSubtype?: string
-  betAmount: number
-  numbers: string[]
-  totalAmount: number
-  potentialWin: number
-  betId: string
+  userId: string;
+  username: string;
+  betDate: Date;
+  drawDate: Date;
+  region: 'M1' | 'M2' | 'both';
+  province: string;
+  betType: string;
+  betSubtype?: string;
+  betAmount: number;
+  numbers: string[];
+  totalAmount: number;
+  potentialWin: number;
+  betId: string;
 }
 
 // Interface cho kết quả xổ số
 interface LotteryResult {
-  date: Date
-  region: 'M1' | 'M2'
-  province: string
+  date: Date;
+  region: 'M1' | 'M2';
+  province: string;
   results: {
-    [prizeKey: string]: string[]
-  }
+    [prizeKey: string]: string[];
+  };
 }
 
 // Interface cho kết quả đối soát
 interface BetCheckResult {
-  betId: string
-  userId: string
-  betDate: Date
-  drawDate: Date
-  betType: string
-  betSubtype?: string
-  betAmount: number
-  numbers: string[]
-  totalAmount: number
-  winAmount: number
+  betId: string;
+  userId: string;
+  betDate: Date;
+  drawDate: Date;
+  betType: string;
+  betSubtype?: string;
+  betAmount: number;
+  numbers: string[];
+  totalAmount: number;
+  winAmount: number;
   matchedNumbers: {
-    number: string
+    number: string;
     matches: {
-      prize: string
-      matchType: string
-      value: string
-    }[]
-  }[]
-  isWin: boolean
+      prize: string;
+      matchType: string;
+      value: string;
+    }[];
+  }[];
+  isWin: boolean;
 }
 ```
 
@@ -400,20 +825,20 @@ export function calculateDauDuoiBetAmount(
   subtype: string,
   region: string
 ): number {
-  let total = 0
+  let total = 0;
 
   if (region === 'M1' || region === 'both') {
-    if (subtype === 'dd') total += betAmount * 2
-    else total += betAmount
+    if (subtype === 'dd') total += betAmount * 2;
+    else total += betAmount;
   }
 
   if (region === 'M2' || region === 'both') {
-    if (subtype === 'dd') total += betAmount * 5
-    else if (subtype === 'dau') total += betAmount * 4
-    else total += betAmount
+    if (subtype === 'dd') total += betAmount * 5;
+    else if (subtype === 'dau') total += betAmount * 4;
+    else total += betAmount;
   }
 
-  return total
+  return total;
 }
 
 /**
@@ -428,20 +853,20 @@ export function calculateXiuChuBetAmount(
   subtype: string,
   region: string
 ): number {
-  let total = 0
+  let total = 0;
 
   if (region === 'M1' || region === 'both') {
-    if (subtype === 'xc') total += betAmount * 2
-    else total += betAmount
+    if (subtype === 'xc') total += betAmount * 2;
+    else total += betAmount;
   }
 
   if (region === 'M2' || region === 'both') {
-    if (subtype === 'xc') total += betAmount * 4
-    else if (subtype === 'dau') total += betAmount * 3
-    else total += betAmount
+    if (subtype === 'xc') total += betAmount * 4;
+    else if (subtype === 'dau') total += betAmount * 3;
+    else total += betAmount;
   }
 
-  return total
+  return total;
 }
 
 /**
@@ -451,25 +876,21 @@ export function calculateXiuChuBetAmount(
  * @param region Miền (M1, M2, hoặc both)
  * @returns Tổng tiền đóng
  */
-export function calculateBaoLoBetAmount(
-  betAmount: number,
-  digits: number,
-  region: string
-): number {
-  const rateM1 = digits === 2 ? 18 : digits === 3 ? 17 : 16
-  const rateM2 = digits === 2 ? 27 : digits === 3 ? 23 : 20
+export function calculateBaoLoBetAmount(betAmount: number, digits: number, region: string): number {
+  const rateM1 = digits === 2 ? 18 : digits === 3 ? 17 : 16;
+  const rateM2 = digits === 2 ? 27 : digits === 3 ? 23 : 20;
 
-  let total = 0
+  let total = 0;
 
   if (region === 'M1' || region === 'both') {
-    total += betAmount * rateM1
+    total += betAmount * rateM1;
   }
 
   if (region === 'M2' || region === 'both') {
-    total += betAmount * rateM2
+    total += betAmount * rateM2;
   }
 
-  return total
+  return total;
 }
 
 /**
@@ -478,7 +899,7 @@ export function calculateBaoLoBetAmount(
  * @returns Tổng tiền đóng
  */
 export function calculateBao7LoBetAmount(betAmount: number): number {
-  return betAmount * 7
+  return betAmount * 7;
 }
 
 /**
@@ -487,7 +908,7 @@ export function calculateBao7LoBetAmount(betAmount: number): number {
  * @returns Tổng tiền đóng
  */
 export function calculateBao8LoBetAmount(betAmount: number): number {
-  return betAmount * 8
+  return betAmount * 8;
 }
 
 /**
@@ -496,7 +917,7 @@ export function calculateBao8LoBetAmount(betAmount: number): number {
  * @returns Tổng tiền đóng
  */
 export function calculateNhatToBetAmount(betAmount: number): number {
-  return betAmount
+  return betAmount;
 }
 
 /**
@@ -505,7 +926,7 @@ export function calculateNhatToBetAmount(betAmount: number): number {
  * @returns Tổng tiền đóng
  */
 export function calculateXienBetAmount(betAmount: number): number {
-  return betAmount * 27
+  return betAmount * 27;
 }
 
 /**
@@ -520,9 +941,9 @@ export function calculateDaBetAmount(betAmount: number, count: number): number {
     3: 3,
     4: 6,
     5: 10,
-  }
+  };
 
-  return betAmount * rates[count]
+  return betAmount * rates[count];
 }
 
 /**
@@ -531,11 +952,8 @@ export function calculateDaBetAmount(betAmount: number, count: number): number {
  * @param payRate Tỷ lệ thưởng
  * @returns Tổng tiền thắng tiềm năng
  */
-export function calculatePotentialWinAmount(
-  betAmount: number,
-  payRate: number
-): number {
-  return betAmount * payRate
+export function calculatePotentialWinAmount(betAmount: number, payRate: number): number {
+  return betAmount * payRate;
 }
 
 /**
@@ -554,29 +972,29 @@ export function calculateCombinationBetAmount(
   betSubtype: string,
   region: string
 ): number {
-  let unitBetAmount = 0
+  let unitBetAmount = 0;
 
   if (betType === 'dd') {
-    unitBetAmount = calculateDauDuoiBetAmount(betAmount, betSubtype, region)
+    unitBetAmount = calculateDauDuoiBetAmount(betAmount, betSubtype, region);
   } else if (betType === 'xc') {
-    unitBetAmount = calculateXiuChuBetAmount(betAmount, betSubtype, region)
+    unitBetAmount = calculateXiuChuBetAmount(betAmount, betSubtype, region);
   } else if (['b2', 'b3', 'b4'].includes(betType)) {
-    const digits = parseInt(betType.charAt(1))
-    unitBetAmount = calculateBaoLoBetAmount(betAmount, digits, region)
+    const digits = parseInt(betType.charAt(1));
+    unitBetAmount = calculateBaoLoBetAmount(betAmount, digits, region);
   } else if (betType === 'b7l') {
-    unitBetAmount = calculateBao7LoBetAmount(betAmount)
+    unitBetAmount = calculateBao7LoBetAmount(betAmount);
   } else if (betType === 'b8l') {
-    unitBetAmount = calculateBao8LoBetAmount(betAmount)
+    unitBetAmount = calculateBao8LoBetAmount(betAmount);
   } else if (betType === 'nt') {
-    unitBetAmount = calculateNhatToBetAmount(betAmount)
+    unitBetAmount = calculateNhatToBetAmount(betAmount);
   } else if (betType === 'x') {
-    unitBetAmount = calculateXienBetAmount(betAmount)
+    unitBetAmount = calculateXienBetAmount(betAmount);
   } else if (betType === 'da') {
-    const count = parseInt(betSubtype.charAt(2))
-    unitBetAmount = calculateDaBetAmount(betAmount, count)
+    const count = parseInt(betSubtype.charAt(2));
+    unitBetAmount = calculateDaBetAmount(betAmount, count);
   }
 
-  return unitBetAmount * numberCount
+  return unitBetAmount * numberCount;
 }
 
 /**
@@ -585,29 +1003,26 @@ export function calculateCombinationBetAmount(
  * @param betType Loại cược
  * @returns true nếu hợp lệ, false nếu không
  */
-export function isValidNumberForBetType(
-  number: string,
-  betType: string
-): boolean {
+export function isValidNumberForBetType(number: string, betType: string): boolean {
   if (['dd', 'nt', 'b2'].includes(betType)) {
     // Cần 2 chữ số
-    return /^\d{2}$/.test(number)
+    return /^\d{2}$/.test(number);
   } else if (['xc', 'b3'].includes(betType)) {
     // Cần 3 chữ số
-    return /^\d{3}$/.test(number)
+    return /^\d{3}$/.test(number);
   } else if (betType === 'b4') {
     // Cần 4 chữ số
-    return /^\d{4}$/.test(number)
+    return /^\d{4}$/.test(number);
   } else if (['b7l', 'b8l'].includes(betType)) {
     // Có thể là 2, 3 hoặc 4 chữ số
-    return /^\d{2,4}$/.test(number)
+    return /^\d{2,4}$/.test(number);
   } else if (['x', 'da'].includes(betType)) {
     // Cần 2 chữ số cho mỗi cặp, nhưng đây là một trường hợp phức tạp hơn
     // cần xem xét trong context của việc xử lý nhiều cặp số
-    return /^\d{2}$/.test(number)
+    return /^\d{2}$/.test(number);
   }
 
-  return false
+  return false;
 }
 
 /**
@@ -617,38 +1032,34 @@ export function isValidNumberForBetType(
  * @param digits Số chữ số (cho b7l/b8l)
  * @returns Tỷ lệ thắng
  */
-export function getPayRate(
-  betType: string,
-  betSubtype?: string,
-  digits?: number
-): number {
+export function getPayRate(betType: string, betSubtype?: string, digits?: number): number {
   if (betType === 'dd' || betType === 'nt' || betType === 'b2') {
-    return 75
+    return 75;
   } else if (betType === 'xc' || betType === 'b3') {
-    return 650
+    return 650;
   } else if (betType === 'b4') {
-    return 5500
+    return 5500;
   } else if (betType === 'b7l' || betType === 'b8l') {
-    if (digits === 2) return 75
-    if (digits === 3) return 650
-    if (digits === 4) return 5500
-    return 0
+    if (digits === 2) return 75;
+    if (digits === 3) return 650;
+    if (digits === 4) return 5500;
+    return 0;
   } else if (betType === 'x') {
-    if (betSubtype === 'x2') return 75
-    if (betSubtype === 'x3') return 40
-    if (betSubtype === 'x4') return 250
-    return 0
+    if (betSubtype === 'x2') return 75;
+    if (betSubtype === 'x3') return 40;
+    if (betSubtype === 'x4') return 250;
+    return 0;
   } else if (betType === 'da') {
     // Đá có nhiều tỷ lệ thắng khác nhau tùy trường hợp
     // Trả về tỷ lệ thắng cơ bản nhất
-    if (betSubtype === 'da2') return 12.5
-    if (betSubtype === 'da3') return 25 // Lowest rate for da3
-    if (betSubtype === 'da4') return 75 // Lowest rate for da4
-    if (betSubtype === 'da5') return 500 // Lowest rate for da5
-    return 0
+    if (betSubtype === 'da2') return 12.5;
+    if (betSubtype === 'da3') return 25; // Lowest rate for da3
+    if (betSubtype === 'da4') return 75; // Lowest rate for da4
+    if (betSubtype === 'da5') return 500; // Lowest rate for da5
+    return 0;
   }
 
-  return 0
+  return 0;
 }
 
 // ===== Các hàm tạo số tự động =====
@@ -661,31 +1072,31 @@ export function getPayRate(
 export function generatePermutations(number: string): string[] {
   // Hàm đệ quy để tạo hoán vị
   function permute(arr: string[]): string[][] {
-    if (arr.length <= 1) return [arr]
+    if (arr.length <= 1) return [arr];
 
-    const result: string[][] = []
+    const result: string[][] = [];
 
     for (let i = 0; i < arr.length; i++) {
-      const current = arr[i]
-      const remaining = [...arr.slice(0, i), ...arr.slice(i + 1)]
-      const remainingPermutations = permute(remaining)
+      const current = arr[i];
+      const remaining = [...arr.slice(0, i), ...arr.slice(i + 1)];
+      const remainingPermutations = permute(remaining);
 
       for (const perm of remainingPermutations) {
-        result.push([current, ...perm])
+        result.push([current, ...perm]);
       }
     }
 
-    return result
+    return result;
   }
 
   // Tạo mảng từ chuỗi số
-  const digits = number.split('')
+  const digits = number.split('');
 
   // Tạo hoán vị
-  const permutations = permute(digits)
+  const permutations = permute(digits);
 
   // Chuyển đổi mảng 2D thành mảng chuỗi và loại bỏ số trùng lặp
-  return Array.from(new Set(permutations.map((perm) => perm.join(''))))
+  return Array.from(new Set(permutations.map((perm) => perm.join(''))));
 }
 
 /**
@@ -694,15 +1105,15 @@ export function generatePermutations(number: string): string[] {
  * @returns Mảng các số thuộc con giáp
  */
 export function generateZodiacNumbers(zodiac: number): string[] {
-  const numbers: string[] = []
+  const numbers: string[] = [];
 
   for (let i = 0; i < 100; i++) {
     if (i % 12 === zodiac) {
-      numbers.push(i.toString().padStart(2, '0'))
+      numbers.push(i.toString().padStart(2, '0'));
     }
   }
 
-  return numbers
+  return numbers;
 }
 
 /**
@@ -711,19 +1122,19 @@ export function generateZodiacNumbers(zodiac: number): string[] {
  * @returns Mảng các số thuộc Tài hoặc Xỉu
  */
 export function generateHighLowNumbers(isHigh: boolean): string[] {
-  const numbers: string[] = []
+  const numbers: string[] = [];
 
   for (let i = 0; i < 100; i++) {
-    const number = i.toString().padStart(2, '0')
+    const number = i.toString().padStart(2, '0');
 
     if (isHigh && i >= 50) {
-      numbers.push(number)
+      numbers.push(number);
     } else if (!isHigh && i < 50) {
-      numbers.push(number)
+      numbers.push(number);
     }
   }
 
-  return numbers
+  return numbers;
 }
 
 /**
@@ -732,17 +1143,17 @@ export function generateHighLowNumbers(isHigh: boolean): string[] {
  * @returns Mảng các số Chẵn hoặc Lẻ
  */
 export function generateOddEvenNumbers(isEven: boolean): string[] {
-  const numbers: string[] = []
+  const numbers: string[] = [];
 
   for (let i = 0; i < 100; i++) {
-    const number = i.toString().padStart(2, '0')
+    const number = i.toString().padStart(2, '0');
 
     if ((isEven && i % 2 === 0) || (!isEven && i % 2 === 1)) {
-      numbers.push(number)
+      numbers.push(number);
     }
   }
 
-  return numbers
+  return numbers;
 }
 
 /**
@@ -751,13 +1162,13 @@ export function generateOddEvenNumbers(isEven: boolean): string[] {
  * @returns Mảng các số có cùng hàng chục
  */
 export function generateTenthsNumbers(tens: number): string[] {
-  const numbers: string[] = []
+  const numbers: string[] = [];
 
   for (let i = 0; i < 10; i++) {
-    numbers.push(`${tens}${i}`)
+    numbers.push(`${tens}${i}`);
   }
 
-  return numbers
+  return numbers;
 }
 
 /**
@@ -766,13 +1177,13 @@ export function generateTenthsNumbers(tens: number): string[] {
  * @returns Mảng các số có cùng hàng đơn vị
  */
 export function generateUnitsNumbers(units: number): string[] {
-  const numbers: string[] = []
+  const numbers: string[] = [];
 
   for (let i = 0; i < 10; i++) {
-    numbers.push(`${i}${units}`)
+    numbers.push(`${i}${units}`);
   }
 
-  return numbers
+  return numbers;
 }
 
 /**
@@ -780,7 +1191,7 @@ export function generateUnitsNumbers(units: number): string[] {
  * @returns Mảng các số có 2 chữ số giống nhau
  */
 export function generateDoubleNumbers(): string[] {
-  return ['11', '22', '33', '44', '55', '66', '77', '88', '99']
+  return ['11', '22', '33', '44', '55', '66', '77', '88', '99'];
 }
 
 /**
@@ -788,7 +1199,7 @@ export function generateDoubleNumbers(): string[] {
  * @returns Mảng các số có 3 chữ số giống nhau
  */
 export function generateTripleNumbers(): string[] {
-  return ['111', '222', '333', '444', '555', '666', '777', '888', '999']
+  return ['111', '222', '333', '444', '555', '666', '777', '888', '999'];
 }
 
 /**
@@ -796,6 +1207,6 @@ export function generateTripleNumbers(): string[] {
  * @returns Mảng các số có 3 chữ số liên tiếp tăng dần
  */
 export function generateSequentialNumbers(): string[] {
-  return ['123', '234', '345', '456', '567', '678', '789']
+  return ['123', '234', '345', '456', '567', '678', '789'];
 }
 ```

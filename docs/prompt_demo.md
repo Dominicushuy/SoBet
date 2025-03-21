@@ -50,7 +50,7 @@ Chỉ cần đủ để chạy demo, không cần authentication phức tạp ha
 ```
 Dựa trên phân tích luật chơi xổ số sau:
 
-[Dán phần JSON object và TypeScript interfaces từ PROMPT ĐẶC BIỆT vào đây]
+Kiểm tra kỹ phần JSON object và TypeScript interfaces trong file `Rules Analysis.md` để đảm bảo bạn đã hiểu rõ về các loại cược và luật chơi.
 
 Tôi cần thiết lập database schema trên Supabase cho ứng dụng demo. Hãy cung cấp SQL scripts để tạo các tables sau:
 
