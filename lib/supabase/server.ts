@@ -34,13 +34,4 @@ export async function createClient() {
   );
 }
 
-// Export các alias như các hàm riêng biệt thay vì gán lại
-export async function createServerComponentClient() {
-  return await createClient();
-}
-
-export async function createServerClient() {
-  return await createClient();
-}
-
 export default createClient;

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { verifyBetResult } from '@/lib/lottery/result-verifier';
 import { addLotteryResult, updateBetAfterVerification } from '@/lib/supabase/mutations';
 import { getBetDetails } from '@/lib/supabase/queries';
-import { createServerClient } from '@/lib/supabase/server';
+import createServerClient from '@/lib/supabase/server';
 import { SavedResult } from '@/types/result';
 
 /**
@@ -22,10 +22,10 @@ export async function submitLotteryResult(resultData: {
 
     // Lấy thông tin user hiện tại (chỉ admin mới có quyền)
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (!session) {
       return {
         error: 'Bạn cần đăng nhập để thực hiện hành động này',
       };
@@ -35,7 +35,7 @@ export async function submitLotteryResult(resultData: {
     const { data: userData } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', session.user.id)
       .single();
 
     if (!userData || userData.role !== 'admin') {
@@ -147,10 +147,10 @@ export async function verifyBetsByDate(draw_date: string, province: string) {
 
     // Lấy thông tin user hiện tại (chỉ admin mới có quyền)
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (!session) {
       return {
         error: 'Bạn cần đăng nhập để thực hiện hành động này',
       };
@@ -160,7 +160,7 @@ export async function verifyBetsByDate(draw_date: string, province: string) {
     const { data: userData } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', session.user.id)
       .single();
 
     if (!userData || userData.role !== 'admin') {

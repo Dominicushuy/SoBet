@@ -2,7 +2,7 @@
 import { User } from '@supabase/supabase-js';
 
 import { createClient as createClientBrowser } from '@/lib/supabase/client';
-import { createServerClient } from '@/lib/supabase/server';
+import createServerClient from '@/lib/supabase/server';
 
 export type UserRole = 'admin' | 'user';
 
@@ -35,20 +35,15 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       .single();
 
     if (error || !userData) {
-      console.error('Error fetching user data:', error);
       return null;
     }
 
     // Lấy thông tin ví của người dùng
-    const { data: walletData, error: walletError } = await supabase
+    const { data: walletData } = await supabase
       .from('wallets')
       .select('balance')
       .eq('user_id', user.id)
       .single();
-
-    if (walletError) {
-      console.error('Error fetching wallet data:', walletError);
-    }
 
     return {
       id: user.id,
@@ -58,7 +53,6 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       balance: walletData?.balance || 0,
     };
   } catch (error) {
-    console.error('Error getting current user:', error);
     return null;
   }
 }
@@ -81,51 +75,68 @@ export function hasRole(user: AuthUser | null, role: UserRole | UserRole[]): boo
  */
 export async function getUserData(user: User): Promise<AuthUser | null> {
   try {
+    if (!user || !user.id) {
+      return null;
+    }
+
     const supabase = createClientBrowser();
 
-    // Lấy thông tin từ bảng users
-    const { data: userData, error } = await supabase
-      .from('users')
-      .select('username, role')
-      .eq('id', user.id)
-      .single();
+    // Xử lý riêng biệt từng truy vấn
 
-    if (error) {
-      console.error('Error fetching user data:', error);
-      // Instead of returning null, return basic user info with default role
+    // 1. Lấy thông tin từ bảng users
+    let userData = null;
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('username, role')
+        .eq('id', user.id)
+        .single();
+
+      if (!error) {
+        userData = data;
+      }
+    } catch (userQueryError) {
+      // Silent in production
+    }
+
+    // 2. Lấy thông tin ví
+    let walletData = null;
+    try {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!error || error.code === 'PGRST116') {
+        // PGRST116 = không tìm thấy
+        walletData = data;
+      }
+    } catch (walletQueryError) {
+      // Silent in production
+    }
+
+    // Tạo và trả về đối tượng AuthUser
+    const authUser: AuthUser = {
+      id: user.id,
+      email: user.email || '',
+      username: userData?.username || undefined,
+      role: (userData?.role as UserRole) || 'user',
+      balance: walletData?.balance || 0,
+    };
+
+    return authUser;
+  } catch (error) {
+    // Trả về thông tin cơ bản trong trường hợp lỗi
+    if (user) {
       return {
         id: user.id,
         email: user.email || '',
-        role: 'user', // Default role if we can't fetch from database
+        role: 'user', // Vai trò mặc định
       };
     }
 
-    // Lấy thông tin ví
-    const { data: walletData, error: walletError } = await supabase
-      .from('wallets')
-      .select('balance')
-      .eq('user_id', user.id)
-      .single();
-
-    if (walletError) {
-      console.error('Error fetching wallet data:', walletError);
-    }
-
-    return {
-      id: user.id,
-      email: user.email || '',
-      username: userData.username,
-      role: userData.role as UserRole,
-      balance: walletData?.balance || 0,
-    };
-  } catch (error) {
-    console.error('Error getting user data:', error);
-    // Still return basic user info in case of error
-    return {
-      id: user.id,
-      email: user.email || '',
-      role: 'user', // Default role
-    };
+    return null;
   }
 }
 

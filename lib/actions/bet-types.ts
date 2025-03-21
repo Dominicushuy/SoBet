@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { createServerClient } from '@/lib/supabase/server';
+import createServerClient from '@/lib/supabase/server';
 import { BetTypeFormValues } from '@/lib/validators/bet-type-form';
 
 /**

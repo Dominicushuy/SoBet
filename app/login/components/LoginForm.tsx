@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from '@/components/ui/Form';
 import { Input } from '@/components/ui/Input';
+import { useAuth } from '@/providers/AuthProvider';
 
 // Form validation schema
 const loginSchema = z.object({
@@ -32,6 +33,7 @@ export default function LoginForm({ redirectTo = '/' }: { redirectTo?: string })
   const [error, setError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const router = useRouter();
+  const { refreshUserData } = useAuth();
 
   // Initialize form
   const form = useForm<LoginFormValues>({
@@ -42,7 +44,6 @@ export default function LoginForm({ redirectTo = '/' }: { redirectTo?: string })
     },
   });
 
-  // Chỉ sửa hàm onSubmit
   const onSubmit = async (data: LoginFormValues) => {
     try {
       setIsSubmitting(true);
@@ -55,20 +56,20 @@ export default function LoginForm({ redirectTo = '/' }: { redirectTo?: string })
         return;
       }
 
-      // Thêm console.log để debug
-      console.log('Login successful:', result);
-      console.log('Redirecting to:', result.redirectTo || redirectTo || '/bet');
+      // Đợi một khoảng thời gian ngắn để Supabase cập nhật session
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Đảm bảo router.push xảy ra sau khi AuthProvider đã cập nhật
-      setTimeout(() => {
-        // Chuyển hướng dựa trên vai trò hoặc URL được chỉ định
-        const destinationUrl = redirectTo !== '/' ? redirectTo : result.redirectTo || '/bet';
-        router.push(destinationUrl);
-        router.refresh();
-      }, 100);
+      // Gọi hàm refresh để cập nhật trạng thái user
+      await refreshUserData();
+
+      // Chọn điểm đến dựa trên ưu tiên
+      const destinationUrl = redirectTo !== '/' ? redirectTo : result.redirectTo || '/bet';
+
+      // Chuyển hướng và refresh router
+      router.push(destinationUrl);
+      router.refresh();
     } catch (error) {
       setError('Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại sau.');
-      console.error('Login error:', error);
     } finally {
       setIsSubmitting(false);
     }

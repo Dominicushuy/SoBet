@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import { calculateBetAmount } from '@/lib/lottery/calculators';
 import { createBet } from '@/lib/supabase/mutations';
 import { getRuleByCode } from '@/lib/supabase/queries';
-import { createServerClient } from '@/lib/supabase/server';
+import createServerClient from '@/lib/supabase/server';
 import { BetFormData } from '@/types/bet';
 
 /**
@@ -18,10 +18,10 @@ export async function createNewBet(formData: BetFormData) {
 
     // Lấy thông tin user hiện tại
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (!session) {
       return {
         error: 'Bạn cần đăng nhập để đặt cược',
       };
@@ -49,7 +49,7 @@ export async function createNewBet(formData: BetFormData) {
     const { data: wallet } = await supabase
       .from('wallets')
       .select('balance')
-      .eq('user_id', user.id)
+      .eq('user_id', session.user.id)
       .single();
 
     if (!wallet || wallet.balance < calculationResult.totalStake) {
@@ -60,7 +60,7 @@ export async function createNewBet(formData: BetFormData) {
 
     // Tạo cược mới
     const betData = {
-      user_id: user.id,
+      user_id: session.user.id,
       rule_id: rule.id,
       region: formData.region,
       province: formData.province,
@@ -100,10 +100,10 @@ export async function cancelBet(betId: string) {
 
     // Lấy thông tin user hiện tại
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (!session) {
       return {
         error: 'Bạn cần đăng nhập để hủy cược',
       };
@@ -114,7 +114,7 @@ export async function cancelBet(betId: string) {
       .from('bets')
       .select('*')
       .eq('id', betId)
-      .eq('user_id', user.id)
+      .eq('user_id', session.user.id)
       .single();
 
     if (!bet) {
@@ -146,7 +146,7 @@ export async function cancelBet(betId: string) {
     const { data: wallet } = await supabase
       .from('wallets')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', session.user.id)
       .single();
 
     if (!wallet) {
@@ -168,7 +168,7 @@ export async function cancelBet(betId: string) {
 
     // Tạo giao dịch hoàn tiền
     const { error: transactionError } = await supabase.from('transactions').insert({
-      user_id: user.id,
+      user_id: session.user.id,
       wallet_id: wallet.id,
       type: 'REFUND',
       amount: bet.total_amount,

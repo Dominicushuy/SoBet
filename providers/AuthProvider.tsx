@@ -1,9 +1,8 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import { User } from '@supabase/supabase-js';
-import { useRouter } from 'next/navigation';
 
 import { createClient } from '@/lib/supabase/client';
 import { formatCurrency } from '@/lib/utils';
@@ -17,7 +16,7 @@ interface AuthContextType {
   balance: number;
   formattedBalance: string;
   signOut: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+  refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -28,121 +27,137 @@ const AuthContext = createContext<AuthContextType>({
   balance: 0,
   formattedBalance: '0 ₫',
   signOut: async () => {},
-  refreshUser: async () => {},
+  refreshUserData: async () => {},
 });
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const useAuth = () => useContext(AuthContext);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
-  const router = useRouter();
 
-  console.log('AuthProvider render', user);
+  const refreshUserData = async () => {
+    if (!supabaseUser) return;
 
-  // Fetch user data helper function
-  const fetchUserData = async (supabaseUser: User) => {
     try {
-      const userData = await getUserData(supabaseUser);
-      setUser(userData);
-      return userData;
+      const retryGetUserData = async (retries = 2): Promise<AuthUser | null> => {
+        try {
+          const userData = await getUserData(supabaseUser);
+          if (userData) {
+            return userData;
+          }
+
+          if (retries > 0) {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            return retryGetUserData(retries - 1);
+          }
+
+          return null;
+        } catch (error) {
+          if (retries > 0) {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            return retryGetUserData(retries - 1);
+          }
+          throw error;
+        }
+      };
+
+      const userData = await retryGetUserData();
+
+      if (userData) {
+        setUser(userData);
+      }
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      return null;
+      // Silent error in production
     }
   };
 
-  // Initialize auth state
   useEffect(() => {
-    const initializeAuth = async () => {
+    const setupAuth = async () => {
       try {
         setIsLoading(true);
 
-        // Check current session
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
         if (session?.user) {
-          await fetchUserData(session.user);
+          setSupabaseUser(session.user);
+
+          try {
+            const userData = await getUserData(session.user);
+            if (userData) {
+              setUser(userData);
+            }
+          } catch (userDataError) {
+            // Silent in production
+          }
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        // Silent in production
       } finally {
-        // Important: Always set loading to false, even on error
         setIsLoading(false);
       }
     };
 
-    initializeAuth();
+    setupAuth();
 
-    // Set up auth state change listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Debug logs
-      console.log('Auth state changed:', event, session?.user?.id);
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (session?.user) {
+          setSupabaseUser(session.user);
 
-      if (event === 'SIGNED_IN' && session?.user) {
-        await fetchUserData(session.user);
+          setTimeout(async () => {
+            try {
+              const userData = await getUserData(session.user);
+              if (userData) {
+                setUser(userData);
+              }
+            } catch (error) {
+              // Silent in production
+            }
+          }, 300);
+        }
       } else if (event === 'SIGNED_OUT') {
+        setSupabaseUser(null);
         setUser(null);
       }
-
-      // Important: Always update loading state
-      setIsLoading(false);
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, []);
 
-  // Sign out function
   const signOut = async () => {
     try {
-      setIsLoading(true);
       await supabase.auth.signOut();
+      setSupabaseUser(null);
       setUser(null);
-      router.push('/login');
     } catch (error) {
-      console.error('Error signing out:', error);
-    } finally {
-      setIsLoading(false);
+      // Silent in production
     }
   };
 
-  // Refresh user data
-  const refreshUser = async () => {
-    try {
-      setIsLoading(true);
-      const {
-        data: { user: supabaseUser },
-      } = await supabase.auth.getUser();
+  const isAuthenticated = !!user;
+  const isAdmin = user?.role === 'admin';
+  const balance = user?.balance || 0;
+  const formattedBalance = formatCurrency(balance);
 
-      if (supabaseUser) {
-        await fetchUserData(supabaseUser);
-      }
-    } catch (error) {
-      console.error('Error refreshing user:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const contextValue = {
+  const value = {
     user,
-    isAuthenticated: !!user,
-    isAdmin: user?.role === 'admin',
+    isAuthenticated,
+    isAdmin,
     isLoading,
-    balance: user?.balance || 0,
-    formattedBalance: formatCurrency(user?.balance || 0),
+    balance,
+    formattedBalance,
     signOut,
-    refreshUser,
+    refreshUserData,
   };
 
-  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => useContext(AuthContext);
-
-export default AuthProvider;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}

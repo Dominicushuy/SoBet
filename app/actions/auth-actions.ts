@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { registerUser } from '@/lib/supabase/mutations';
-import { createServerClient } from '@/lib/supabase/server';
+import createServerClient from '@/lib/supabase/server';
 import { AuthUser, UserRole, getRedirectPathAfterLogin } from '@/lib/utils/auth-utils';
 
 /**
@@ -109,18 +109,18 @@ export async function getCurrentUserWithRole(): Promise<{ user: AuthUser | null 
 
     // Lấy thông tin người dùng từ auth
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (!session) {
       return { user: null };
     }
 
     // Lấy thông tin chi tiết người dùng với vai trò
     const { data: userData } = await supabase
       .from('users')
-      .select('username, role')
-      .eq('id', user.id)
+      .select('*')
+      .eq('id', session.user.id)
       .single();
 
     if (!userData) {
@@ -131,13 +131,13 @@ export async function getCurrentUserWithRole(): Promise<{ user: AuthUser | null 
     const { data: walletData } = await supabase
       .from('wallets')
       .select('balance')
-      .eq('user_id', user.id)
+      .eq('user_id', userData.id)
       .single();
 
     return {
       user: {
-        id: user.id,
-        email: user.email || '',
+        id: userData.id,
+        email: userData.email || '',
         username: userData.username,
         role: userData.role as UserRole,
         balance: walletData?.balance || 0,

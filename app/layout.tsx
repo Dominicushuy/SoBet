@@ -22,8 +22,9 @@ export default function RootLayout({
   return (
     <html lang="vi" suppressHydrationWarning>
       <body className={inter.className}>
-        <QueryProvider>
-          <AuthProvider>
+        {/* AuthProvider phải được đặt trước QueryProvider */}
+        <AuthProvider>
+          <QueryProvider>
             <div className="min-h-screen bg-lottery-background">
               <Header />
               <div className="flex flex-1">
@@ -31,8 +32,8 @@ export default function RootLayout({
                 <main className="flex-1 p-4 md:p-6">{children}</main>
               </div>
             </div>
-          </AuthProvider>
-        </QueryProvider>
+          </QueryProvider>
+        </AuthProvider>
       </body>
     </html>
   );
