@@ -1,26 +1,18 @@
-const axios = require("axios");
-const fs = require("fs");
-const { JSDOM } = require("jsdom");
-const path = require("path");
+const axios = require('axios');
+const fs = require('fs');
+const { JSDOM } = require('jsdom');
+const path = require('path');
 
 // Cấu hình chi tiết và mở rộng
 const CONFIG = {
   // Cấu hình miền
-  mien: ["mien-bac", "mien-trung", "mien-nam"],
+  mien: ['mien-bac', 'mien-trung', 'mien-nam'],
 
   // Ngày trong tuần
-  ngay: [
-    "thu-hai",
-    "thu-ba",
-    "thu-tu",
-    "thu-nam",
-    "thu-sau",
-    "thu-bay",
-    "chu-nhat",
-  ],
+  ngay: ['thu-hai', 'thu-ba', 'thu-tu', 'thu-nam', 'thu-sau', 'thu-bay', 'chu-nhat'],
 
-  baseUrl: "https://www.minhngoc.net.vn/ket-qua-xo-so",
-  outputFile: "ketqua_xoso.json",
+  baseUrl: 'https://www.minhngoc.net.vn/ket-qua-xo-so',
+  outputFile: 'data/ketqua_xoso.json',
   delayBetweenRequests: 1000, // ms
   maxRetries: 3,
 };
@@ -28,8 +20,8 @@ const CONFIG = {
 // Chỉ lấy một số miền và ngày để kiểm thử
 const DEBUG = {
   enable: false,
-  mien: ["mien-bac"],
-  ngay: ["thu-hai", "thu-ba"],
+  mien: ['mien-bac'],
+  ngay: ['thu-hai', 'thu-ba'],
 };
 
 /**
@@ -51,11 +43,7 @@ async function fetchWithRetry(url, retries = CONFIG.maxRetries) {
     return response.data;
   } catch (error) {
     if (retries <= 0) throw error;
-    console.log(
-      `Thử lại (${CONFIG.maxRetries - retries + 1}/${
-        CONFIG.maxRetries
-      }): ${url}`
-    );
+    console.log(`Thử lại (${CONFIG.maxRetries - retries + 1}/${CONFIG.maxRetries}): ${url}`);
     await delay(CONFIG.delayBetweenRequests);
     return fetchWithRetry(url, retries - 1);
   }
@@ -67,8 +55,8 @@ async function fetchWithRetry(url, retries = CONFIG.maxRetries) {
  * @returns {string} Chuỗi ngày định dạng chuẩn (VD: "2025-03-17")
  */
 function formatDate(rawDate) {
-  if (!rawDate) return "";
-  const parts = rawDate.split("/");
+  if (!rawDate) return '';
+  const parts = rawDate.split('/');
   if (parts.length === 3) {
     return `${parts[2]}-${parts[1]}-${parts[0]}`;
   }
@@ -82,61 +70,61 @@ function formatDate(rawDate) {
  */
 function extractMienBacData(boxKqxs) {
   // Lấy thông tin tỉnh thành từ tiêu đề
-  const titleElement = boxKqxs.querySelector(".title");
-  let tenTinh = "";
+  const titleElement = boxKqxs.querySelector('.title');
+  let tenTinh = '';
 
   if (titleElement) {
-    const tinhLink = titleElement.querySelector("a:first-child");
+    const tinhLink = titleElement.querySelector('a:first-child');
     if (tinhLink) {
       const tinhText = tinhLink.textContent;
-      tenTinh = tinhText.replace("KẾT QUẢ XỔ SỐ", "").trim();
+      tenTinh = tinhText.replace('KẾT QUẢ XỔ SỐ', '').trim();
     }
   }
 
   // Lấy thông tin ngày
-  const ngayElement = boxKqxs.querySelector(".ngay a");
-  const rawDate = ngayElement ? ngayElement.textContent.trim() : "";
+  const ngayElement = boxKqxs.querySelector('.ngay a');
+  const rawDate = ngayElement ? ngayElement.textContent.trim() : '';
   const ngay = formatDate(rawDate);
 
   // Lấy thông tin thứ
-  const thuElement = boxKqxs.querySelector(".thu a");
-  const thu = thuElement ? thuElement.textContent.trim() : "";
+  const thuElement = boxKqxs.querySelector('.thu a');
+  const thu = thuElement ? thuElement.textContent.trim() : '';
 
   // Lấy mã vé số
-  const loaiVeElement = boxKqxs.querySelector(".loaive_content");
-  const loaiVe = loaiVeElement ? loaiVeElement.textContent.trim() : "";
+  const loaiVeElement = boxKqxs.querySelector('.loaive_content');
+  const loaiVe = loaiVeElement ? loaiVeElement.textContent.trim() : '';
 
   // Tìm bảng kết quả xổ số
-  const kqTable = boxKqxs.querySelector("table.box_kqxs_content");
+  const kqTable = boxKqxs.querySelector('table.box_kqxs_content');
   if (!kqTable) {
-    console.log("Không tìm thấy bảng kết quả xổ số");
+    console.log('Không tìm thấy bảng kết quả xổ số');
     return null;
   }
 
   // Trích xuất kết quả các giải
   const ketQua = {
-    giaiDacBiet: Array.from(kqTable.querySelectorAll("td.giaidb div")).map(
-      (div) => div.textContent.trim()
-    ),
-    giaiNhat: Array.from(kqTable.querySelectorAll("td.giai1 div")).map((div) =>
+    giaiDacBiet: Array.from(kqTable.querySelectorAll('td.giaidb div')).map((div) =>
       div.textContent.trim()
     ),
-    giaiNhi: Array.from(kqTable.querySelectorAll("td.giai2 div")).map((div) =>
+    giaiNhat: Array.from(kqTable.querySelectorAll('td.giai1 div')).map((div) =>
       div.textContent.trim()
     ),
-    giaiBa: Array.from(kqTable.querySelectorAll("td.giai3 div")).map((div) =>
+    giaiNhi: Array.from(kqTable.querySelectorAll('td.giai2 div')).map((div) =>
       div.textContent.trim()
     ),
-    giaiTu: Array.from(kqTable.querySelectorAll("td.giai4 div")).map((div) =>
+    giaiBa: Array.from(kqTable.querySelectorAll('td.giai3 div')).map((div) =>
       div.textContent.trim()
     ),
-    giaiNam: Array.from(kqTable.querySelectorAll("td.giai5 div")).map((div) =>
+    giaiTu: Array.from(kqTable.querySelectorAll('td.giai4 div')).map((div) =>
       div.textContent.trim()
     ),
-    giaiSau: Array.from(kqTable.querySelectorAll("td.giai6 div")).map((div) =>
+    giaiNam: Array.from(kqTable.querySelectorAll('td.giai5 div')).map((div) =>
       div.textContent.trim()
     ),
-    giaiBay: Array.from(kqTable.querySelectorAll("td.giai7 div")).map((div) =>
+    giaiSau: Array.from(kqTable.querySelectorAll('td.giai6 div')).map((div) =>
+      div.textContent.trim()
+    ),
+    giaiBay: Array.from(kqTable.querySelectorAll('td.giai7 div')).map((div) =>
       div.textContent.trim()
     ),
   };
@@ -157,51 +145,49 @@ function extractMienBacData(boxKqxs) {
  */
 function extractMienNamTrungData(table) {
   // Lấy thông tin ngày và thứ
-  const thuElement = table.querySelector(".thu a");
-  const thu = thuElement ? thuElement.textContent.trim() : "";
+  const thuElement = table.querySelector('.thu a');
+  const thu = thuElement ? thuElement.textContent.trim() : '';
 
-  const ngayElement = table.querySelector(".ngay a");
-  const rawDate = ngayElement ? ngayElement.textContent.trim() : "";
+  const ngayElement = table.querySelector('.ngay a');
+  const rawDate = ngayElement ? ngayElement.textContent.trim() : '';
   const ngay = formatDate(rawDate);
 
   // Xử lý cho miền Nam và miền Trung
-  const provinceTableNodes = table.querySelectorAll("table.rightcl");
+  const provinceTableNodes = table.querySelectorAll('table.rightcl');
   const danhSachTinh = [];
 
   provinceTableNodes.forEach((provinceTable) => {
-    const tenTinh =
-      provinceTable.querySelector(".tinh a")?.textContent.trim() || "";
-    const maTinh =
-      provinceTable.querySelector(".matinh")?.textContent.trim() || "";
+    const tenTinh = provinceTable.querySelector('.tinh a')?.textContent.trim() || '';
+    const maTinh = provinceTable.querySelector('.matinh')?.textContent.trim() || '';
 
     // Lấy thông tin các giải thưởng
     const ketQua = {
-      giaiDacBiet: Array.from(
-        provinceTable.querySelectorAll(".giaidb div")
-      ).map((div) => div.textContent.trim()),
-      giaiNhat: Array.from(provinceTable.querySelectorAll(".giai1 div")).map(
-        (div) => div.textContent.trim()
+      giaiDacBiet: Array.from(provinceTable.querySelectorAll('.giaidb div')).map((div) =>
+        div.textContent.trim()
       ),
-      giaiNhi: Array.from(provinceTable.querySelectorAll(".giai2 div")).map(
-        (div) => div.textContent.trim()
+      giaiNhat: Array.from(provinceTable.querySelectorAll('.giai1 div')).map((div) =>
+        div.textContent.trim()
       ),
-      giaiBa: Array.from(provinceTable.querySelectorAll(".giai3 div")).map(
-        (div) => div.textContent.trim()
+      giaiNhi: Array.from(provinceTable.querySelectorAll('.giai2 div')).map((div) =>
+        div.textContent.trim()
       ),
-      giaiTu: Array.from(provinceTable.querySelectorAll(".giai4 div")).map(
-        (div) => div.textContent.trim()
+      giaiBa: Array.from(provinceTable.querySelectorAll('.giai3 div')).map((div) =>
+        div.textContent.trim()
       ),
-      giaiNam: Array.from(provinceTable.querySelectorAll(".giai5 div")).map(
-        (div) => div.textContent.trim()
+      giaiTu: Array.from(provinceTable.querySelectorAll('.giai4 div')).map((div) =>
+        div.textContent.trim()
       ),
-      giaiSau: Array.from(provinceTable.querySelectorAll(".giai6 div")).map(
-        (div) => div.textContent.trim()
+      giaiNam: Array.from(provinceTable.querySelectorAll('.giai5 div')).map((div) =>
+        div.textContent.trim()
       ),
-      giaiBay: Array.from(provinceTable.querySelectorAll(".giai7 div")).map(
-        (div) => div.textContent.trim()
+      giaiSau: Array.from(provinceTable.querySelectorAll('.giai6 div')).map((div) =>
+        div.textContent.trim()
       ),
-      giaiTam: Array.from(provinceTable.querySelectorAll(".giai8 div")).map(
-        (div) => div.textContent.trim()
+      giaiBay: Array.from(provinceTable.querySelectorAll('.giai7 div')).map((div) =>
+        div.textContent.trim()
+      ),
+      giaiTam: Array.from(provinceTable.querySelectorAll('.giai8 div')).map((div) =>
+        div.textContent.trim()
       ),
     };
 
@@ -238,15 +224,15 @@ async function layDuLieuNgay(mien, ngay) {
     const document = dom.window.document;
 
     let duLieu;
-    if (mien === "mien-bac") {
-      const boxKqxs = document.querySelector(".box_kqxs");
+    if (mien === 'mien-bac') {
+      const boxKqxs = document.querySelector('.box_kqxs');
       if (!boxKqxs) {
         console.log(`Không tìm thấy kết quả xổ số cho ${mien} - ${ngay}`);
         return null;
       }
       duLieu = extractMienBacData(boxKqxs);
     } else {
-      const targetTable = document.querySelector("table.bkqmiennam");
+      const targetTable = document.querySelector('table.bkqmiennam');
       if (!targetTable) {
         console.log(`Không tìm thấy bảng kết quả xổ số cho ${mien} - ${ngay}`);
         return null;
@@ -266,7 +252,7 @@ async function layDuLieuNgay(mien, ngay) {
  */
 async function layDuLieuXoSo() {
   try {
-    console.log("Bắt đầu lấy dữ liệu xổ số...");
+    console.log('Bắt đầu lấy dữ liệu xổ số...');
 
     // Lấy danh sách miền từ cấu hình debug hoặc cấu hình chính
     const danhSachMien = DEBUG.enable ? DEBUG.mien : CONFIG.mien;
@@ -287,33 +273,31 @@ async function layDuLieuXoSo() {
     // Xác định thứ của ngày cần lấy dữ liệu
     const dayOfWeek = targetDate.getDay();
     const daysMapping = [
-      "chu-nhat",
-      "thu-hai",
-      "thu-ba",
-      "thu-tu",
-      "thu-nam",
-      "thu-sau",
-      "thu-bay",
+      'chu-nhat',
+      'thu-hai',
+      'thu-ba',
+      'thu-tu',
+      'thu-nam',
+      'thu-sau',
+      'thu-bay',
     ];
     const targetDayOfWeek = daysMapping[dayOfWeek];
 
     console.log(
-      `Lấy dữ liệu cho thứ: ${targetDayOfWeek} (${
-        targetDate.toISOString().split("T")[0]
-      })`
+      `Lấy dữ liệu cho thứ: ${targetDayOfWeek} (${targetDate.toISOString().split('T')[0]})`
     );
 
     // Cấu trúc dữ liệu kết quả
     const ketQuaXoSo = {
       metadata: {
-        version: "1.1",
+        version: '1.1',
         nguon: CONFIG.baseUrl,
         ngayLayDuLieu: new Date().toISOString(),
         tongSoMien: danhSachMien.length,
         tongSoNgay: 1,
         thuDaLay: targetDayOfWeek,
-        ngayDaLay: targetDate.toISOString().split("T")[0],
-        quyTacApDung: "Lấy dữ liệu theo thời gian cụ thể của từng miền",
+        ngayDaLay: targetDate.toISOString().split('T')[0],
+        quyTacApDung: 'Lấy dữ liệu theo thời gian cụ thể của từng miền',
       },
       duLieu: {},
     };
@@ -333,7 +317,7 @@ async function layDuLieuXoSo() {
 
     // Tạo thư mục output nếu chưa tồn tại
     const outputDir = path.dirname(CONFIG.outputFile);
-    if (outputDir !== "." && !fs.existsSync(outputDir)) {
+    if (outputDir !== '.' && !fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
@@ -343,13 +327,13 @@ async function layDuLieuXoSo() {
     console.log(`Đã lưu dữ liệu vào file ${CONFIG.outputFile}`);
     return ketQuaXoSo;
   } catch (error) {
-    console.error("Đã xảy ra lỗi chung:", error.message);
+    console.error('Đã xảy ra lỗi chung:', error.message);
     throw error;
   }
 }
 
 // Gọi hàm chính
 layDuLieuXoSo().catch((error) => {
-  console.error("Lỗi khi lấy dữ liệu xổ số:", error);
+  console.error('Lỗi khi lấy dữ liệu xổ số:', error);
   process.exit(1);
 });

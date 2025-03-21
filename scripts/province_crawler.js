@@ -1,25 +1,17 @@
 // tinh_theo_ngay.js - Lấy danh sách tỉnh thành theo ngày từ trang minhngoc
 
-const axios = require("axios");
-const fs = require("fs");
-const { JSDOM } = require("jsdom");
-const path = require("path");
+const axios = require('axios');
+const fs = require('fs');
+const { JSDOM } = require('jsdom');
+const path = require('path');
 
 // Cấu hình
 const CONFIG = {
   // Có thể dễ dàng mở rộng sau này
-  mien: ["mien-bac", "mien-trung", "mien-nam"],
-  ngay: [
-    "thu-hai",
-    "thu-ba",
-    "thu-tu",
-    "thu-nam",
-    "thu-sau",
-    "thu-bay",
-    "chu-nhat",
-  ],
-  baseUrl: "https://www.minhngoc.net.vn/ket-qua-xo-so",
-  outputFile: "danh_sach_tinh_theo_ngay.json",
+  mien: ['mien-bac', 'mien-trung', 'mien-nam'],
+  ngay: ['thu-hai', 'thu-ba', 'thu-tu', 'thu-nam', 'thu-sau', 'thu-bay', 'chu-nhat'],
+  baseUrl: 'https://www.minhngoc.net.vn/ket-qua-xo-so',
+  outputFile: 'data/danh_sach_tinh_theo_ngay.json',
   delayBetweenRequests: 1000, // ms
   maxRetries: 3,
 };
@@ -27,8 +19,8 @@ const CONFIG = {
 // Chỉ lấy một số miền và ngày để kiểm thử
 const DEBUG = {
   enable: false,
-  mien: ["mien-bac"],
-  ngay: ["thu-hai", "thu-ba"],
+  mien: ['mien-bac'],
+  ngay: ['thu-hai', 'thu-ba'],
 };
 
 /**
@@ -50,11 +42,7 @@ async function fetchWithRetry(url, retries = CONFIG.maxRetries) {
     return response.data;
   } catch (error) {
     if (retries <= 0) throw error;
-    console.log(
-      `Thử lại (${CONFIG.maxRetries - retries + 1}/${
-        CONFIG.maxRetries
-      }): ${url}`
-    );
+    console.log(`Thử lại (${CONFIG.maxRetries - retries + 1}/${CONFIG.maxRetries}): ${url}`);
     await delay(CONFIG.delayBetweenRequests);
     return fetchWithRetry(url, retries - 1);
   }
@@ -66,8 +54,8 @@ async function fetchWithRetry(url, retries = CONFIG.maxRetries) {
  * @returns {string} Chuỗi ngày định dạng chuẩn (VD: "2025-03-17")
  */
 function formatDate(rawDate) {
-  if (!rawDate) return "";
-  const parts = rawDate.split("/");
+  if (!rawDate) return '';
+  const parts = rawDate.split('/');
   if (parts.length === 3) {
     return `${parts[2]}-${parts[1]}-${parts[0]}`;
   }
@@ -81,28 +69,28 @@ function formatDate(rawDate) {
  */
 function extractMienBacData(boxKqxs) {
   // Lấy thông tin tỉnh thành từ tiêu đề
-  const titleElement = boxKqxs.querySelector(".title");
-  let tenTinh = "";
+  const titleElement = boxKqxs.querySelector('.title');
+  let tenTinh = '';
 
   if (titleElement) {
-    const tinhLink = titleElement.querySelector("a:first-child");
+    const tinhLink = titleElement.querySelector('a:first-child');
     if (tinhLink) {
       const tinhText = tinhLink.textContent;
-      tenTinh = tinhText.replace("KẾT QUẢ XỔ SỐ", "").trim();
+      tenTinh = tinhText.replace('KẾT QUẢ XỔ SỐ', '').trim();
     }
   }
 
   // Lấy thông tin ngày
-  const ngayElement = boxKqxs.querySelector(".ngay a");
-  const rawDate = ngayElement ? ngayElement.textContent.trim() : "";
+  const ngayElement = boxKqxs.querySelector('.ngay a');
+  const rawDate = ngayElement ? ngayElement.textContent.trim() : '';
   const ngay = formatDate(rawDate);
 
   // Lấy thông tin thứ
-  const thuElement = boxKqxs.querySelector(".thu a");
-  const thu = thuElement ? thuElement.textContent.trim() : "";
+  const thuElement = boxKqxs.querySelector('.thu a');
+  const thu = thuElement ? thuElement.textContent.trim() : '';
 
   return {
-    tinh: tenTinh || "Xổ số Miền Bắc",
+    tinh: tenTinh || 'Xổ số Miền Bắc',
     ngay,
     thu,
   };
@@ -115,22 +103,20 @@ function extractMienBacData(boxKqxs) {
  */
 function extractMienNamTrungData(table) {
   // Lấy thông tin ngày và thứ
-  const thuElement = table.querySelector(".thu a");
-  const thu = thuElement ? thuElement.textContent.trim() : "";
+  const thuElement = table.querySelector('.thu a');
+  const thu = thuElement ? thuElement.textContent.trim() : '';
 
-  const ngayElement = table.querySelector(".ngay a");
-  const rawDate = ngayElement ? ngayElement.textContent.trim() : "";
+  const ngayElement = table.querySelector('.ngay a');
+  const rawDate = ngayElement ? ngayElement.textContent.trim() : '';
   const ngay = formatDate(rawDate);
 
   // Xử lý cho miền Nam và miền Trung
-  const provinceTableNodes = table.querySelectorAll("table.rightcl");
+  const provinceTableNodes = table.querySelectorAll('table.rightcl');
   const danhSachTinh = [];
 
   provinceTableNodes.forEach((provinceTable) => {
-    const tenTinh =
-      provinceTable.querySelector(".tinh a")?.textContent.trim() || "";
-    const maTinh =
-      provinceTable.querySelector(".matinh")?.textContent.trim() || "";
+    const tenTinh = provinceTable.querySelector('.tinh a')?.textContent.trim() || '';
+    const maTinh = provinceTable.querySelector('.matinh')?.textContent.trim() || '';
 
     danhSachTinh.push({
       tinh: tenTinh,
@@ -163,9 +149,9 @@ async function layDuLieuNgay(mien, ngay) {
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
-    if (mien === "mien-bac") {
+    if (mien === 'mien-bac') {
       // Xử lý riêng cho miền Bắc
-      const boxKqxs = document.querySelector(".box_kqxs");
+      const boxKqxs = document.querySelector('.box_kqxs');
       if (!boxKqxs) {
         console.log(`Không tìm thấy kết quả xổ số cho ${mien} - ${ngay}`);
         return null;
@@ -173,7 +159,7 @@ async function layDuLieuNgay(mien, ngay) {
       return extractMienBacData(boxKqxs);
     } else {
       // Xử lý cho miền Nam và miền Trung
-      const targetTable = document.querySelector("table.bkqmiennam");
+      const targetTable = document.querySelector('table.bkqmiennam');
       if (!targetTable) {
         console.log(`Không tìm thấy bảng kết quả xổ số cho ${mien} - ${ngay}`);
         return null;
@@ -191,7 +177,7 @@ async function layDuLieuNgay(mien, ngay) {
  */
 async function layDanhSachTinhTheongay() {
   try {
-    console.log("Bắt đầu lấy danh sách tỉnh thành theo ngày...");
+    console.log('Bắt đầu lấy danh sách tỉnh thành theo ngày...');
 
     // Lấy danh sách miền và ngày từ cấu hình debug hoặc cấu hình chính
     const danhSachMien = DEBUG.enable ? DEBUG.mien : CONFIG.mien;
@@ -200,7 +186,7 @@ async function layDanhSachTinhTheongay() {
     // Cấu trúc dữ liệu kết quả
     const danhSachTinh = {
       metadata: {
-        version: "1.0",
+        version: '1.0',
         nguon: CONFIG.baseUrl,
         ngayLayDuLieu: new Date().toISOString(),
         tongSoMien: danhSachMien.length,
@@ -224,13 +210,13 @@ async function layDanhSachTinhTheongay() {
         let danhSachTinhTheoMien = [];
 
         if (duLieu) {
-          if (mien === "mien-bac") {
+          if (mien === 'mien-bac') {
             // Miền Bắc chỉ có một tỉnh
             danhSachTinhTheoMien.push({
-              tinh: duLieu.tinh || "Xổ số Miền Bắc",
+              tinh: duLieu.tinh || 'Xổ số Miền Bắc',
               ngay: duLieu.ngay,
               thu: duLieu.thu,
-              mien: "mien-bac",
+              mien: 'mien-bac',
             });
           } else {
             // Miền Trung và Miền Nam có nhiều tỉnh
@@ -255,7 +241,7 @@ async function layDanhSachTinhTheongay() {
 
     // Tạo thư mục output nếu chưa tồn tại
     const outputDir = path.dirname(CONFIG.outputFile);
-    if (outputDir !== "." && !fs.existsSync(outputDir)) {
+    if (outputDir !== '.' && !fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
@@ -265,13 +251,13 @@ async function layDanhSachTinhTheongay() {
     console.log(`Đã lưu danh sách tỉnh thành vào file ${CONFIG.outputFile}`);
     return danhSachTinh;
   } catch (error) {
-    console.error("Đã xảy ra lỗi khi lấy danh sách tỉnh thành:", error.message);
+    console.error('Đã xảy ra lỗi khi lấy danh sách tỉnh thành:', error.message);
     throw error;
   }
 }
 
 // Gọi hàm chính để lấy danh sách tỉnh theo ngày
 layDanhSachTinhTheongay().catch((error) => {
-  console.error("Lỗi khi lấy danh sách tỉnh theo ngày:", error);
+  console.error('Lỗi khi lấy danh sách tỉnh theo ngày:', error);
   process.exit(1);
 });

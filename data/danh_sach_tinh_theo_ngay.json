@@ -2,7 +2,7 @@
   "metadata": {
     "version": "1.0",
     "nguon": "https://www.minhngoc.net.vn/ket-qua-xo-so",
-    "ngayLayDuLieu": "2025-03-19T03:48:41.522Z",
+    "ngayLayDuLieu": "2025-03-21T05:08:58.614Z",
     "tongSoMien": 3,
     "tongSoNgay": 7
   },
@@ -109,7 +109,7 @@
       "mien-bac": [
         {
           "tinh": "Bắc Ninh",
-          "ngay": "2025-03-12",
+          "ngay": "2025-03-19",
           "thu": "Thứ tư",
           "mien": "mien-bac"
         }
@@ -118,14 +118,14 @@
         {
           "tinh": "Đà Nẵng",
           "maTinh": "XSDNG",
-          "ngay": "2025-03-12",
+          "ngay": "2025-03-19",
           "thu": "Thứ tư",
           "mien": "mien-trung"
         },
         {
           "tinh": "Khánh Hòa",
           "maTinh": "XSKH",
-          "ngay": "2025-03-12",
+          "ngay": "2025-03-19",
           "thu": "Thứ tư",
           "mien": "mien-trung"
         }
@@ -133,22 +133,22 @@
       "mien-nam": [
         {
           "tinh": "Đồng Nai",
-          "maTinh": "XSDN - 3K2",
-          "ngay": "2025-03-12",
+          "maTinh": "XSDN - 3K3",
+          "ngay": "2025-03-19",
           "thu": "Thứ tư",
           "mien": "mien-nam"
         },
         {
           "tinh": "Cần Thơ",
-          "maTinh": "XSCT - K2T3",
-          "ngay": "2025-03-12",
+          "maTinh": "XSCT - K3T3",
+          "ngay": "2025-03-19",
           "thu": "Thứ tư",
           "mien": "mien-nam"
         },
         {
           "tinh": "Sóc Trăng",
-          "maTinh": "XSST - K2T3",
-          "ngay": "2025-03-12",
+          "maTinh": "XSST - K3T3",
+          "ngay": "2025-03-19",
           "thu": "Thứ tư",
           "mien": "mien-nam"
         }
@@ -158,7 +158,7 @@
       "mien-bac": [
         {
           "tinh": "Hà Nội",
-          "ngay": "2025-03-13",
+          "ngay": "2025-03-20",
           "thu": "Thứ năm",
           "mien": "mien-bac"
         }
@@ -167,21 +167,21 @@
         {
           "tinh": "Bình Định",
           "maTinh": "XSBDI",
-          "ngay": "2025-03-13",
+          "ngay": "2025-03-20",
           "thu": "Thứ năm",
           "mien": "mien-trung"
         },
         {
           "tinh": "Quảng Trị",
           "maTinh": "XSQT",
-          "ngay": "2025-03-13",
+          "ngay": "2025-03-20",
           "thu": "Thứ năm",
           "mien": "mien-trung"
         },
         {
           "tinh": "Quảng Bình",
           "maTinh": "XSQB",
-          "ngay": "2025-03-13",
+          "ngay": "2025-03-20",
           "thu": "Thứ năm",
           "mien": "mien-trung"
         }
@@ -189,22 +189,22 @@
       "mien-nam": [
         {
           "tinh": "Tây Ninh",
-          "maTinh": "XSTN - 3K2",
-          "ngay": "2025-03-13",
+          "maTinh": "XSTN - 3K3",
+          "ngay": "2025-03-20",
           "thu": "Thứ năm",
           "mien": "mien-nam"
         },
         {
           "tinh": "An Giang",
-          "maTinh": "XSAG - AG-3K2",
-          "ngay": "2025-03-13",
+          "maTinh": "XSAG - AG-3K3",
+          "ngay": "2025-03-20",
           "thu": "Thứ năm",
           "mien": "mien-nam"
         },
         {
           "tinh": "Bình Thuận",
-          "maTinh": "XSBTH - 3K2",
-          "ngay": "2025-03-13",
+          "maTinh": "XSBTH - 3K3",
+          "ngay": "2025-03-20",
           "thu": "Thứ năm",
           "mien": "mien-nam"
         }
