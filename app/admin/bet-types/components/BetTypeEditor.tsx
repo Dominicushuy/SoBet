@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { X, Plus, Trash } from 'lucide-react';
+import { Plus, Trash } from 'lucide-react';
 import { useForm, useFieldArray } from 'react-hook-form';
 
 import PayRateEditor from '@/app/admin/bet-types/components/PayRateEditor';
@@ -169,15 +169,6 @@ export default function BetTypeEditor({ betType, onClose }: BetTypeEditorProps) 
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Chỉnh sửa' : 'Thêm'} Loại Cược</DialogTitle>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-4 top-4"
-            onClick={() => onClose()}
-          >
-            <X className="h-4 w-4" />
-          </Button>
         </DialogHeader>
 
         {error && (

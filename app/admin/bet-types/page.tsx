@@ -164,7 +164,7 @@ export default function BetTypesPage() {
             </Button>
             <Button
               size="sm"
-              variant={betType.active ? 'destructive' : 'default'}
+              variant={betType.active ? 'secondary' : 'default'}
               onClick={() => handleToggleActive(betType.id, betType.active)}
             >
               {betType.active ? 'Vô hiệu' : 'Kích hoạt'}
