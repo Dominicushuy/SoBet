@@ -42,6 +42,7 @@ export default function LoginForm({ redirectTo = '/' }: { redirectTo?: string })
     },
   });
 
+  // Chỉ sửa hàm onSubmit
   const onSubmit = async (data: LoginFormValues) => {
     try {
       setIsSubmitting(true);
@@ -54,10 +55,17 @@ export default function LoginForm({ redirectTo = '/' }: { redirectTo?: string })
         return;
       }
 
-      // Chuyển hướng dựa trên vai trò hoặc URL được chỉ định
-      const destinationUrl = redirectTo !== '/' ? redirectTo : result.redirectTo || '/bet';
-      router.push(destinationUrl);
-      router.refresh();
+      // Thêm console.log để debug
+      console.log('Login successful:', result);
+      console.log('Redirecting to:', result.redirectTo || redirectTo || '/bet');
+
+      // Đảm bảo router.push xảy ra sau khi AuthProvider đã cập nhật
+      setTimeout(() => {
+        // Chuyển hướng dựa trên vai trò hoặc URL được chỉ định
+        const destinationUrl = redirectTo !== '/' ? redirectTo : result.redirectTo || '/bet';
+        router.push(destinationUrl);
+        router.refresh();
+      }, 100);
     } catch (error) {
       setError('Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại sau.');
       console.error('Login error:', error);

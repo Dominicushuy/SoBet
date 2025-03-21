@@ -4,12 +4,36 @@ import Link from 'next/link';
 
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { useAuth } from '@/providers/AuthProvider';
 
 export default function AdminPage() {
+  const { user, isAdmin, isLoading } = useAuth();
+
   return (
     <ProtectedRoute requiredRole="admin">
       <div className="container mx-auto">
         <h1 className="mb-6 text-3xl font-bold">Trang Quản Trị</h1>
+        {/* Debug panel - chỉ hiển thị trong development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mb-6 p-4 border rounded-md bg-yellow-50">
+            <h2 className="font-bold mb-2">Debug Info:</h2>
+            <pre className="text-xs overflow-auto">
+              {JSON.stringify(
+                {
+                  user: {
+                    id: user?.id,
+                    email: user?.email,
+                    role: user?.role,
+                  },
+                  isAdmin,
+                  isLoading,
+                },
+                null,
+                2
+              )}
+            </pre>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card>
