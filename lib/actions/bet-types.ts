@@ -107,6 +107,20 @@ export async function updateBetType(id: string, values: BetTypeFormValues) {
   try {
     const supabase = await createServerClient();
 
+    // Kiểm tra xem loại cược có tồn tại không
+    const { data: existingBetType, error: findError } = await supabase
+      .from('rules')
+      .select('*')
+      .eq('id', id);
+
+    if (findError) {
+      throw findError;
+    }
+
+    if (!existingBetType || existingBetType.length === 0) {
+      return { error: `Loại cược với ID ${id} không tồn tại.` };
+    }
+
     // Kiểm tra xem rule_code đã tồn tại chưa (trừ id hiện tại)
     const { data: existingRule } = await supabase
       .from('rules')
@@ -126,21 +140,22 @@ export async function updateBetType(id: string, values: BetTypeFormValues) {
       win_logic: values.win_logic ? JSON.stringify(values.win_logic) : null,
     };
 
-    const { data, error } = await supabase
-      .from('rules')
-      .update(dataToUpdate)
-      .eq('id', id)
-      .select()
-      .single();
+    // Sửa: không sử dụng .single() để tránh lỗi PGRST116
+    const { data, error } = await supabase.from('rules').update(dataToUpdate).eq('id', id).select();
 
     if (error) {
       throw error;
     }
 
+    if (!data || data.length === 0) {
+      return { error: 'Không tìm thấy loại cược sau khi cập nhật.' };
+    }
+
     // Revalidate related paths
     revalidatePath('/admin/bet-types');
 
-    return { data };
+    // Trả về phần tử đầu tiên của mảng kết quả
+    return { data: data[0] };
   } catch (error) {
     console.error('Error updating bet type:', error);
     return { error: 'Không thể cập nhật loại cược. Vui lòng thử lại sau.' };
